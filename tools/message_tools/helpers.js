@@ -15,7 +15,12 @@ function data_initializer() {
     warnings: "",
   };
 }
-
+function extract_url_controller(data, message) {
+  const extract_url_from_string = validators.extract_link(message);
+  message = extract_url_from_string["remainder"];
+  data["payment_address"] = extract_url_from_string["url"];
+  return { message, data };
+}
 function extracted_amounts_resolver(data, extracted_amounts, message) {
   if (
     extracted_amounts["amount"] === null &&
@@ -41,5 +46,6 @@ function extracted_amounts_resolver(data, extracted_amounts, message) {
 }
 module.exports = {
   data_initializer,
+  extract_url_controller,
   extracted_amounts_resolver,
 };

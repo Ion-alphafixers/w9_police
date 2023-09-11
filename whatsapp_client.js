@@ -44,7 +44,21 @@ class WhatsappClient {
       //   console.log(message);
       console.log(message.body);
       try {
-        message.reply(payment_message_parser(message.body));
+        if (message.body.startsWith("PP")) {
+          message.reply(payment_message_parser(message.body));
+        } else if (message.body.startsWith("RR")) {
+          message.reply(payment_message_parser(message.body));
+        } else if (
+          message.body.includes("PP") &&
+          message.body.startsWith("PP") === false
+        ) {
+          message.reply("Format Error: Payment message should start with PP");
+        } else if (
+          message.body.includes("RR") &&
+          message.body.startsWith("RR") === false
+        ) {
+          message.reply("Format Error: Refund message should start with RR");
+        }
       } catch (e) {
         console.log(e);
       }
@@ -73,4 +87,3 @@ class WhatsappClient {
 }
 
 new WhatsappClient();
-  

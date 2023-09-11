@@ -55,22 +55,32 @@ function extract_note(message) {
   };
 }
 function extract_amounts_and_message(inputString) {
-  const regex = /\$\d+(?:,\d{3})*(?:\.\d{2})?/g; // Match dollar amounts (e.g., $500 or $720.45)
+  const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g; // Match consecutive dollar amounts with or without cents
+
   const matches = inputString.match(regex);
 
   if (!matches) {
     return {
       amount: null,
       total_amount: null,
-      message: inputString.replace(/\$\d+(?:,\d{3})*(?:\.\d{2})?/g, "").trim(),
+      message: inputString.trim(),
     }; // No matches found, treat the whole string as the message
   }
 
   if (matches.length === 2) {
+    const regex =
+      /\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)\s*\/\s*\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)/g;
+    if (!regex.test(inputString)) {
+      return "Format error: the dollar amount should be separated by / only";
+    }
     const [amount, totalAmount] = matches.map((match) =>
       parseFloat(match.replace(/\$/g, "").replace(/,/g, ""))
     );
-    let message = inputString.replace(regex, "").trim();
+    let message = inputString.split("$");
+    message.pop()
+    message.pop()
+    message = message.join("")
+    message = message.slice(0, -1);
 
     // Replace trailing "/ /" with "/"
     message = message.replace(/\/\s*\/$/, "/");
@@ -96,7 +106,7 @@ function extract_amounts_and_message(inputString) {
     return {
       amount: null,
       total_amount: null,
-      message: inputString.replace(/\$\d+(?:,\d{3})*(?:\.\d{2})?/g, "").trim(),
+      message: inputString.trim(),
     }; // No matches found or insufficient matches found
   }
 }
