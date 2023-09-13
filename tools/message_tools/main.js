@@ -1,11 +1,24 @@
 const { data_initializer, extracted_amounts_resolver } = require("./helpers");
 const validators = require("./sections_validators");
-const phone_validators = require("./validator_lib_validators");
+const validators_lib = require("./validator_lib_validators");
 function payment_message_parser(message) {
   let data = data_initializer();
   // console.log(message);
-  message = message.replace("PP:", "");
-  message = message.replace("RR:", "");
+  if (
+    message.includes(
+      "Jon Doe/ (803)991-8877/Zelle/ Kate Doe/ 151488-T-J/ $500/ $720 Paid his wife Kate"
+    )
+  ) {
+    console.log();
+  }
+  if (message.includes("PP") === false && message.includes("RR") === false) {
+    return;
+  }
+  message = message.replace("PP:", "").trim();
+  message = message.replace("RR:", "").trim();
+  console.log(parseInt(message[message.length - 1]));
+  
+
   const extract_url_from_string = validators.extract_link(message);
   message = extract_url_from_string["remainder"];
   data["payment_address"] = extract_url_from_string["url"];
@@ -15,12 +28,17 @@ function payment_message_parser(message) {
     return message_length_check;
   }
   let left_pop = validators.remove_from_left(message);
+  // Test if the string contains an integer
+  if (validators_lib.phone_validator(left_pop["first_part"].trim())) {
+    return "Format error: tech name not found";
+  } else if (/-?\d+/.test(left_pop["first_part"]) === true) {
+    return "Format error: tech name or phone number wrongly formatted";
+  }
+
   data["tech_name"] = left_pop["first_part"];
   left_pop = validators.remove_from_left(left_pop["rest_of_the_string"]);
-  if (phone_validators.phone_validator(left_pop["first_part"]) === false) {
-    console.log(
-      "Format error: tech/vendor phone number not found, please enter 9 digit tech phone number"
-    );
+  left_pop["first_part"] = left_pop["first_part"].replace(",", "-");
+  if (validators_lib.phone_validator(left_pop["first_part"].trim()) === false) {
     return "Format error: tech/vendor phone number not found, please enter 9 digit tech phone number";
   } else {
     data["tech_phone"] = left_pop["first_part"];
@@ -28,10 +46,19 @@ function payment_message_parser(message) {
   const extracted_note = validators.extract_note(
     left_pop["rest_of_the_string"]
   );
+  if (typeof extracted_note === "string") {
+    return extracted_note;
+  }
   data["note"] = extracted_note["note"];
+  // if (isNaN(parseInt(message[message.length - 1]))) {
+  //   return "Format error: payment text should end with dollar amount";
+  // }
   const extracted_amounts = validators.extract_amounts_and_message(
     extracted_note["message"]
   );
+  if (typeof extracted_amounts === "string") {
+    return extracted_amounts;
+  }
   let resolved_amounts = extracted_amounts_resolver(
     data,
     extracted_amounts,

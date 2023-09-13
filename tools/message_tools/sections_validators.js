@@ -2,9 +2,12 @@ const payment_methods = require("../../configs/payment_methods");
 const validators = require("./validator_lib_validators");
 
 function check_number_of_slashes(message) {
+  message = message.split("//");
   //clean the message from https:// coming from payment addresses of credit
-  message = message.split("//")[0];
-  message = message.split("/");
+  if (message.length > 1 && message[1].split("/").length > 1) {
+    return "Format error: consecutive forward slashes (//) only allowed for note specification";
+  }
+  message = message[0].split("/");
   if (message.length < 4) {
     return "Format error: too few fields, please make sure payment instruction includes all elements separated by /";
   } else if (message.length > 8) {
@@ -43,11 +46,15 @@ function extract_link(message) {
 }
 function extract_note(message) {
   const splitted_text = message.split("//");
+
   if (splitted_text.length === 1) {
     return {
       note: null,
       message: message,
     };
+  }
+  if (splitted_text[1].length === 0) {
+    return "Format error: empty note";
   }
   return {
     note: splitted_text[1],
@@ -55,8 +62,20 @@ function extract_note(message) {
   };
 }
 function extract_amounts_and_message(inputString) {
-  const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g; // Match consecutive dollar amounts with or without cents
-
+  const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g;
+  // if (/^\d{1,3}(?:,\d{3})*(?![\d,])$/.test(inputString) === false) {
+  //   return "Format error: , separator should define a thousand separator";
+  // }
+  if (!/\$\d/.test(inputString)) {
+    return "Format error: No dollar amounts found";
+  }
+  
+  // Match consecutive dollar amounts with or without cents
+  let amounts_with_no_currency_symbol_check =
+    check_for_amounts_with_no_currency_symbol(inputString);
+  if (typeof amounts_with_no_currency_symbol_check === "string") {
+    return amounts_with_no_currency_symbol_check;
+  }
   const matches = inputString.match(regex);
 
   if (!matches) {
@@ -68,6 +87,22 @@ function extract_amounts_and_message(inputString) {
   }
 
   if (matches.length === 2) {
+    let message = inputString.split("$");
+    message.pop();
+    message.pop();
+    const splitted_message_with_poped_amounts = [...message];
+    message = message.join("");
+    message = message.slice(0, -1);
+
+    // Replace trailing "/ /" with "/"
+    message = message.replace(/\/\s*\/$/, "/");
+
+    if (
+      is_valid_payment_tag(matches[0]) &&
+      is_valid_payment_tag(splitted_message_with_poped_amounts[-1]) === false
+    ) {
+      return "Format error: dollar sign not allowed inside payment-tag";
+    }
     const regex =
       /\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)\s*\/\s*\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)/g;
     if (!regex.test(inputString)) {
@@ -76,14 +111,6 @@ function extract_amounts_and_message(inputString) {
     const [amount, totalAmount] = matches.map((match) =>
       parseFloat(match.replace(/\$/g, "").replace(/,/g, ""))
     );
-    let message = inputString.split("$");
-    message.pop()
-    message.pop()
-    message = message.join("")
-    message = message.slice(0, -1);
-
-    // Replace trailing "/ /" with "/"
-    message = message.replace(/\/\s*\/$/, "/");
 
     return {
       amount,
@@ -116,17 +143,58 @@ function check_for_amounts_with_no_currency_symbol(message) {
   const secondToLastIndex = lastIndex - 1;
 
   if (lastIndex >= 0 && secondToLastIndex >= 0) {
-    const lastItem = parseInt(splitted_message[lastIndex]);
-    const secondToLastItem = parseInt(splitted_message[secondToLastIndex]);
-    if (lastItem === NaN && secondToLastItem === NaN) {
-      return "Format error: No amount specified, please enter the required amount to be paid";
-    } else if (typeof lastItem === "number" && secondToLastItem === NaN) {
+    const lastItem = parseFloat(splitted_message[lastIndex]);
+    let secondToLastItem = parseFloat(splitted_message[secondToLastIndex]);
+    if (/[^0-9]/.test(splitted_message[secondToLastIndex])) {
+      secondToLastItem = NaN;
+    }
+    if (
+      isNaN(lastItem) === false &&
+      isNaN(secondToLastItem) &&
+      splitted_message[secondToLastIndex].includes("$")
+    ) {
+      // $500/720 test case
+      return "Format error: payment total amount should be dollar amount. Example: $50/$150";
+    } else if (
+      isNaN(secondToLastItem) === false &&
+      isNaN(lastItem) &&
+      splitted_message[lastIndex].includes("$") &&
+      splitted_message[secondToLastIndex].includes("$") === false
+    ) {
+      // 500/$720 test case
       return "Format error: payment amount should be dollar amount. Example: $50";
     } else if (
-      typeof secondToLastItem === "number" &&
-      typeof lastItem === "number"
+      isNaN(secondToLastItem) &&
+      isNaN(lastItem) &&
+      splitted_message[lastIndex].includes("$") === true &&
+      splitted_message[secondToLastIndex].includes("$") === false
     ) {
+      // 151488-T-J/$720 test case
+      return;
+    } else if (
+      isNaN(secondToLastItem) === false &&
+      isNaN(lastItem) === false &&
+      splitted_message[lastIndex].includes("$") === false &&
+      splitted_message[secondToLastIndex].includes("$") === false
+    ) {
+      // 500/720 test case
       return "Format error: payment amount and total amount should be dollar amount. Example: $50/$150";
+    } else if (
+      isNaN(secondToLastItem) &&
+      isNaN(lastItem) &&
+      splitted_message[lastIndex].includes("$") &&
+      splitted_message[secondToLastIndex].includes("$")
+    ) {
+      // $500/$720 test case
+      return;
+    } else if (
+      isNaN(secondToLastItem) &&
+      isNaN(lastItem) === false &&
+      splitted_message[lastIndex].includes("$") === false &&
+      splitted_message[secondToLastIndex].includes("$") === false
+    ) {
+      // $500/$720 test case
+      return "Format error: payment amount should be dollar amount. Example: $50";
     }
   } else {
     return "Format error: Payment message not constructed correctly";
@@ -134,9 +202,13 @@ function check_for_amounts_with_no_currency_symbol(message) {
   return "Format error: Payment message not constructed correctly";
 }
 function is_valid_payment_tag(paymentTag) {
-  const purpose_test = validate_purpose(paymentTag.split("-")[2]);
-  let fm_test = paymentTag.split("-")[1].length <= 2;
-  return { purpose_test, fm_test };
+  try {
+    const purpose_test = validate_purpose(paymentTag.split("-")[2]);
+    let fm_test = paymentTag.split("-")[1].length <= 2;
+    return { purpose_test, fm_test };
+  } catch (e) {
+    return "Format error: payment tag wrongly formatted";
+  }
 }
 function validate_purpose(purpose) {
   const regex = /^[AMJR](\d+|\d*\.\d{1})?$/;
@@ -154,11 +226,17 @@ function validate_purpose(purpose) {
 function extract_payment_tag(message) {
   message = message.split("/");
   let payment_tag = message.pop().trim();
+  let payment_tag_validation = is_valid_payment_tag(payment_tag);
   var count_of_separators = (payment_tag.match(/-/g) || []).length;
   if (count_of_separators != 2) {
     return "Format error: payment tag should contain 3 parts";
   }
-  let payment_tag_validation = is_valid_payment_tag(payment_tag);
+  if (
+    payment_tag_validation["purpose_test"] === false &&
+    payment_tag_validation["fm_test"] === false
+  ) {
+    return "Format error: payment purpose and fm not recognized";
+  }
   if (payment_tag_validation["purpose_test"] === false) {
     return "Format error: payment purpose not recognized";
   }
@@ -201,9 +279,9 @@ function assert_ach_payment_info(payment_address) {
       return false;
     }
     if (mathematical_operation === "=") {
-      return info[1].length === identifier_length;
+      return info[1].trim().length === identifier_length;
     } else if (mathematical_operation === "<=") {
-      return info[1].length <= identifier_length;
+      return info[1].trim().length <= identifier_length;
     }
   }
   payment_address = payment_address.replace("(", "");
@@ -226,8 +304,12 @@ function extract_payment_method_and_payment_address(message) {
         payment_method: message[0].trim(),
         payment_address: null,
       };
-    } else {
-      return "Format Error: Payment adress not defined";
+    } else if (payment_methods.includes(message[0].trim())) {
+      return "Format Error: Payment adress not defined correctly";
+    } else if (payment_methods.includes(message[0].trim()) === false) {
+      return `Format error: payment method not recognized, payment method has to be one of the following ${payment_methods.join(
+        ", "
+      )}`;
     }
   } else if (message.length === 2) {
     if (payment_methods.includes(message[0].trim()) === false) {
@@ -235,33 +317,33 @@ function extract_payment_method_and_payment_address(message) {
         ", "
       )}`;
     }
-    if (message[0] === "Zelle") {
+    if (message[0].trim() === "Zelle") {
       if (
-        (validators.email_validator(message[1]) ||
-          validators.phone_validator(message[1])) === true
+        (validators.email_validator(message[1].trim()) ||
+          validators.phone_validator(message[1].trim())) === true
       ) {
         return {
-          payment_method: message[0],
-          payment_address: message[1],
+          payment_method: message[0].trim(),
+          payment_address: message[1].trim(),
         };
       } else {
         return "Warning: payment address for Zelle should be phone number or email address";
       }
-    } else if (message[0] === "ACH") {
-      const payment_address = message[1];
+    } else if (message[0].trim() === "ACH") {
+      const payment_address = message[1].trim();
 
       if (assert_ach_payment_info(payment_address) === true) {
         return {
-          payment_method: message[0],
-          payment_address: message[1],
+          payment_method: message[0].trim(),
+          payment_address: message[1].trim(),
         };
       } else {
         return "warning: payment address for ACH should be of the format Rout# xxxxxx, Acct # xxxxxx;  where routing numbers are 9 digits long and acct numbers up to 17 digits";
       }
     } else {
       return {
-        payment_method: message[0],
-        payment_address: message[1],
+        payment_method: message[0].trim(),
+        payment_address: message[1].trim(),
       };
     }
   }

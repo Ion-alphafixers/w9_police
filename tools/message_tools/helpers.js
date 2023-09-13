@@ -42,7 +42,7 @@ function extracted_amounts_resolver(data, extracted_amounts, message) {
   if (data["amount"] >= 5000) {
     data["warnings"] +=
       "warning: payment amount exceeds $5,000, proceed with caution/";
-  }
+  } 
 }
 module.exports = {
   data_initializer,
