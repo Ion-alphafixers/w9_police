@@ -101,10 +101,11 @@ let wrong_test_messages = {
     "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A0.5/ $50 / -$100",
     "PP: Joe Garcia/ (803)457-3409/Venmo/ @Jgarc/ 151488-T-A2/ -$75 /$175",
   ],
-  "Invalid Recipient Name Format": [
-    "PP: Jon Doe/ (803)991-8877/Zelle/ Kate.Doe / 151488-T-J/ $500/ $720 //Paid his wife Kate",
+  "RR payment with no negative amounts": [
+    "RR: Jon Doe/ (803)555,5555/Zelle / +16783321134/ 151488-T-J/ $500/ $720",
+    "RR: Jon Doe/ (803)555,5555/Zelle / +16783321134/ 151488-T-J/ $500",
   ],
-  
+  "Invalid Recipient Name Format": [],
 };
 function run_test_cases(correct_test_cases_flag, wrong_test_cases_flag) {
   if (correct_test_cases_flag) {
@@ -124,12 +125,14 @@ function run_test_cases(correct_test_cases_flag, wrong_test_cases_flag) {
       "####################################################################################### Wrong Test Cases #######################################################################################"
     );
     Object.keys(wrong_test_messages).map((key) => {
+      console.log();
       console.log(`================> Test Case:${key} <================`);
       wrong_test_messages[key].map((message) => {
         console.log("Message: ", message);
         console.log(payment_message_parser(message));
       });
       console.log(`================> Test Case:${key} End <================`);
+      console.log();
     });
     console.log(
       "####################################################################################### Wrong Test Cases End #######################################################################################"

@@ -3,11 +3,11 @@ const validators = require("./sections_validators");
 const validators_lib = require("./validator_lib_validators");
 function payment_message_parser(message) {
   let data = data_initializer();
+  const is_rr_message = message.includes("RR") && message.startsWith("RR");
   // console.log(message);
   if (
-    message.includes(
-      "Jon Doe/ (803)991-8877/Zelle/ Kate Doe/ 151488-T-J/ $500/ $720 Paid his wife Kate"
-    )
+    message ==
+    "RR: Jon Doe/ (803)555,5555/Zelle / +16783321134/ 151488-T-J/ $500"
   ) {
     console.log();
   }
@@ -16,8 +16,6 @@ function payment_message_parser(message) {
   }
   message = message.replace("PP:", "").trim();
   message = message.replace("RR:", "").trim();
-  console.log(parseInt(message[message.length - 1]));
-  
 
   const extract_url_from_string = validators.extract_link(message);
   message = extract_url_from_string["remainder"];
@@ -54,7 +52,8 @@ function payment_message_parser(message) {
   //   return "Format error: payment text should end with dollar amount";
   // }
   const extracted_amounts = validators.extract_amounts_and_message(
-    extracted_note["message"]
+    extracted_note["message"],
+    is_rr_message
   );
   if (typeof extracted_amounts === "string") {
     return extracted_amounts;
@@ -66,6 +65,8 @@ function payment_message_parser(message) {
   );
   if (typeof resolved_amounts === "string") {
     return resolved_amounts;
+  } else if (parseFloat(data["amount"]) > parseFloat(data["total_amount"])) {
+    return "Format error: amount larger than total amount";
   }
   const extracted_payement_tag = validators.extract_payment_tag(
     extracted_amounts["message"].replace(/\/+$/, "")

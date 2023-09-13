@@ -21,7 +21,12 @@ function extract_url_controller(data, message) {
   data["payment_address"] = extract_url_from_string["url"];
   return { message, data };
 }
-function extracted_amounts_resolver(data, extracted_amounts, message) {
+function extracted_amounts_resolver(
+  data,
+  extracted_amounts,
+  message,
+  
+) {
   if (
     extracted_amounts["amount"] === null &&
     extracted_amounts["total_amount"] === null
@@ -42,7 +47,7 @@ function extracted_amounts_resolver(data, extracted_amounts, message) {
   if (data["amount"] >= 5000) {
     data["warnings"] +=
       "warning: payment amount exceeds $5,000, proceed with caution/";
-  } 
+  }
 }
 module.exports = {
   data_initializer,

@@ -8,6 +8,7 @@ function phone_validator(string_to_check) {
 function email_validator(string_to_check) {
   return validator.isEmail(string_to_check);
 }
+
 module.exports = {
   phone_validator,
   email_validator,
