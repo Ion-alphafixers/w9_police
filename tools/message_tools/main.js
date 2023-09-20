@@ -110,7 +110,7 @@ function payment_message_parser(message) {
   for (const [key, value] of Object.entries(data)) {
     output += `${key}: ${value}\n`;
   }
-  return output;
+  return {output,data};
 }
 let test_messages = [
   "PP: Osceola Air LLC/ (407) 439-1995/  Credit Card / https://client.housecallpro.com/pay_invoice/43e46deb2efbdcc64ee0be0a06c02a08b5d7c369ee94ea2a1a70bf61d7cf0e36_e9142c3990e632ca80a97841983c930bcd81116455b128698285224d476ff99a/ 152632-T-J / $309.75 ",

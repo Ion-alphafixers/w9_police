@@ -3,12 +3,14 @@ const lambda_functions_urls = require("./configs/lambda_functions_urls");
 const reactions = require("./configs/reactions");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const { payment_message_parser } = require("./tools/message_tools/main");
+const { APPROVER_NUMBERS } = require("./configs/numbers");
 
 class WhatsappClient {
   constructor() {
     this.whatsapp_invoices_receiver_lambda_function_url =
       lambda_functions_urls.WHATSAPP_INVOICES_RECEIVER;
     this.reactions = reactions;
+    this.messages_mapping = {};
 
     this.client = new Client({
       puppeteer: {
@@ -19,14 +21,19 @@ class WhatsappClient {
     this.initialize_listeners();
   }
   async send_message_to_lambda_functions(message) {
-    const response = await fetch(
-      this.whatsapp_invoices_receiver_lambda_function_url,
-      {
-        method: "POST",
-        body: JSON.stringify(message),
-      }
-    );
-    console.log(response);
+    try {
+      const response = await fetch(
+        this.whatsapp_invoices_receiver_lambda_function_url,
+        {
+          method: "POST",
+          body: JSON.stringify(message),
+        }
+      );
+      console.log(response);
+      console.log("Request sent");
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   qr_code_listener() {
@@ -45,19 +52,19 @@ class WhatsappClient {
       console.log(message.body);
       try {
         if (message.body.startsWith("PP")) {
-          message.reply(payment_message_parser(message.body));
+          const {output,data} = payment_message_parser(message.body);
+          if (output.startsWith("Format") === false) {
+            this.messages_mapping[message.id] = data;
+          }
+          const reply = await message.reply(output);
+          this.messages_mapping[reply.id["id"]] = output;
         } else if (message.body.startsWith("RR")) {
-          message.reply(payment_message_parser(message.body));
-        } else if (
-          message.body.includes("PP") &&
-          message.body.startsWith("PP") === false
-        ) {
-          message.reply("Format Error: Payment message should start with PP");
-        } else if (
-          message.body.includes("RR") &&
-          message.body.startsWith("RR") === false
-        ) {
-          message.reply("Format Error: Refund message should start with RR");
+          const {output,data} = payment_message_parser(message.body);
+          if (output.startsWith("Format") === false) {
+            this.messages_mapping[message.id];
+          }
+          const reply = await message.reply(output);
+          this.messages_mapping[reply.id["id"]] = data;
         }
       } catch (e) {
         console.log(e);
@@ -66,13 +73,23 @@ class WhatsappClient {
   }
   edit_message_listener() {
     this.client.on("message_edit", async (message) => {
-      console.log(message);
-      message.react(this.reactions.thumbs_up);
+      // console.log(message);
+      // message.react(this.reactions.thumbs_up);
     });
   }
   reaction_listener() {
     this.client.on("message_reaction", (message) => {
-      console.log(message);
+      // console.log(message);
+
+      if (
+        APPROVER_NUMBERS.includes(
+          message.id["participant"].replace("@c.us", "")
+        )
+      ) {
+        this.send_message_to_lambda_functions(
+          this.messages_mapping[message.msgId["id"]]
+        );
+      }
     });
   }
   initialize_listeners() {
