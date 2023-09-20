@@ -11,7 +11,10 @@ function payment_message_parser(message) {
   ) {
     console.log();
   }
-  if (message.includes("PP") === false && message.includes("RR") === false) {
+  if (
+    message.startsWith("PP") === false &&
+    message.startsWith("RR") === false
+  ) {
     return;
   }
   message = message.replace("PP:", "").trim();

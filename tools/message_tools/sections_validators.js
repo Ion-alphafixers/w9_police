@@ -61,7 +61,43 @@ function extract_note(message) {
     message: splitted_text[0],
   };
 }
-function extract_amounts_and_message(inputString) {
+function check_for_negative_amounts(
+  number_of_matches,
+  inputString,
+  is_rr_message
+) {
+  let splitted_input = inputString.split("/");
+  if (number_of_matches === 0) {
+    return "Format error: No dollar amount found";
+  } else if (number_of_matches === 1 && is_rr_message) {
+    if (splitted_input[splitted_input.length - 1].includes("-") === false) {
+      return "Format error: RR payment should have a negative amount";
+    }
+    splitted_input[splitted_input.length - 1] = splitted_input[
+      splitted_input.length - 1
+    ].replace("-", "");
+  } else if (number_of_matches === 2 && is_rr_message) {
+    if (splitted_input[splitted_input.length - 1].includes("-") === true) {
+      return "Format error: RR total amount cannot be a negative amount";
+    } else if (
+      splitted_input[splitted_input.length - 2].includes("-") === false
+    ) {
+      return "Format error: RR payment should have a negative amount";
+    }
+    splitted_input[splitted_input.length - 1] = splitted_input[
+      splitted_input.length - 1
+    ].replace("-", "");
+  }
+
+  try {
+    return {
+      inputString: splitted_input.join("/"),
+    };
+  } catch (e) {
+    console.log();
+  }
+}
+function extract_amounts_and_message(inputString, is_rr_message) {
   const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g;
   // if (/^\d{1,3}(?:,\d{3})*(?![\d,])$/.test(inputString) === false) {
   //   return "Format error: , separator should define a thousand separator";
@@ -69,7 +105,7 @@ function extract_amounts_and_message(inputString) {
   if (!/\$\d/.test(inputString)) {
     return "Format error: No dollar amounts found";
   }
-  
+
   // Match consecutive dollar amounts with or without cents
   let amounts_with_no_currency_symbol_check =
     check_for_amounts_with_no_currency_symbol(inputString);
@@ -87,6 +123,16 @@ function extract_amounts_and_message(inputString) {
   }
 
   if (matches.length === 2) {
+    const negative_amount_checker = check_for_negative_amounts(
+      matches.length,
+      inputString,
+      is_rr_message
+    );
+    if (typeof negative_amount_checker === "string") {
+      return negative_amount_checker;
+    } else {
+      inputString = negative_amount_checker["inputString"];
+    }
     let message = inputString.split("$");
     message.pop();
     message.pop();
@@ -99,7 +145,11 @@ function extract_amounts_and_message(inputString) {
 
     if (
       is_valid_payment_tag(matches[0]) &&
-      is_valid_payment_tag(splitted_message_with_poped_amounts[-1]) === false
+      is_valid_payment_tag(
+        splitted_message_with_poped_amounts[
+          splitted_message_with_poped_amounts.length - 1
+        ]
+      ) === false
     ) {
       return "Format error: dollar sign not allowed inside payment-tag";
     }
@@ -118,6 +168,16 @@ function extract_amounts_and_message(inputString) {
       message,
     };
   } else if (matches.length === 1) {
+    const negative_amount_checker = check_for_negative_amounts(
+      matches.length,
+      inputString,
+      is_rr_message
+    );
+    if (typeof negative_amount_checker === "string") {
+      return negative_amount_checker;
+    } else {
+      inputString = negative_amount_checker["inputString"];
+    }
     const amount = parseFloat(matches[0].replace(/\$/g, "").replace(/,/g, ""));
     let message = inputString.replace(matches[0], "").trim();
 
@@ -340,6 +400,24 @@ function extract_payment_method_and_payment_address(message) {
       } else {
         return "warning: payment address for ACH should be of the format Rout# xxxxxx, Acct # xxxxxx;  where routing numbers are 9 digits long and acct numbers up to 17 digits";
       }
+    } else if (message[0].trim() === "Cashapp") {
+      const payment_address = message[1].trim();
+      if (payment_address.startsWith("$") === false) {
+        return "warning: payment address for Cashapp has to start with $";
+      }
+      return {
+        payment_method: message[0].trim(),
+        payment_address: message[1].trim(),
+      };
+    } else if (message[0].trim() === "Venmo") {
+      const payment_address = message[1].trim();
+      if (payment_address.startsWith("@") === false) {
+        return "warning: payment address for Venmo has to start with @";
+      }
+      return {
+        payment_method: message[0].trim(),
+        payment_address: message[1].trim(),
+      };
     } else {
       return {
         payment_method: message[0].trim(),
