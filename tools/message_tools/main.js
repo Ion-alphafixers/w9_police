@@ -26,21 +26,21 @@ function payment_message_parser(message) {
   const message_length_check = validators.check_number_of_slashes(message);
   if (message_length_check !== true) {
     // console.log(message_length_check);
-    return message_length_check;
+    return{output: message_length_check,data:{}}
   }
   let left_pop = validators.remove_from_left(message);
   // Test if the string contains an integer
   if (validators_lib.phone_validator(left_pop["first_part"].trim())) {
-    return "Format error: tech name not found";
+    return{output: "Format error: tech name not found",data:{}}
   } else if (/-?\d+/.test(left_pop["first_part"]) === true) {
-    return "Format error: tech name or phone number wrongly formatted";
+    return{output: "Format error: tech name or phone number wrongly formatted",data:{}}
   }
 
   data["tech_name"] = left_pop["first_part"];
   left_pop = validators.remove_from_left(left_pop["rest_of_the_string"]);
   left_pop["first_part"] = left_pop["first_part"].replace(",", "-");
   if (validators_lib.phone_validator(left_pop["first_part"].trim()) === false) {
-    return "Format error: tech/vendor phone number not found, please enter 9 digit tech phone number";
+    return{output: "Format error: tech/vendor phone number not found, please enter 9 digit tech phone number",data:{}}
   } else {
     data["tech_phone"] = left_pop["first_part"];
   }
@@ -48,18 +48,18 @@ function payment_message_parser(message) {
     left_pop["rest_of_the_string"]
   );
   if (typeof extracted_note === "string") {
-    return extracted_note;
+    return{output: extracted_note,data:{}}
   }
   data["note"] = extracted_note["note"];
   // if (isNaN(parseInt(message[message.length - 1]))) {
-  //   return "Format error: payment text should end with dollar amount";
+  //   return{output: "Format error: payment text should end with dollar amount",data:{}}
   // }
   const extracted_amounts = validators.extract_amounts_and_message(
     extracted_note["message"],
     is_rr_message
   );
   if (typeof extracted_amounts === "string") {
-    return extracted_amounts;
+    return{output: extracted_amounts,data:{}}
   }
   let resolved_amounts = extracted_amounts_resolver(
     data,
@@ -67,16 +67,16 @@ function payment_message_parser(message) {
     message
   );
   if (typeof resolved_amounts === "string") {
-    return resolved_amounts;
+    return{output: resolved_amounts,data:{}}
   } else if (parseFloat(data["amount"]) > parseFloat(data["total_amount"])) {
-    return "Format error: amount larger than total amount";
+    return{output: "Format error: amount larger than total amount",data:{}}
   }
   const extracted_payement_tag = validators.extract_payment_tag(
     extracted_amounts["message"].replace(/\/+$/, "")
   );
   if (typeof extracted_payement_tag === "string") {
     console.log(extracted_payement_tag);
-    return extracted_payement_tag;
+    return{output: extracted_payement_tag,data:{}}
   }
   data["payment_tag"] = extracted_payement_tag["payment_tag"];
   data["wo_number"] = extracted_payement_tag["payment_tag"].split("-")[0];
@@ -96,7 +96,7 @@ function payment_message_parser(message) {
       extracted_tech_additional_name["message"]
     );
   if (typeof extracted_payment_info === "string") {
-    return extracted_payment_info;
+    return{output: extracted_payment_info,data:{}}
   }
   data["payment_method"] = extracted_payment_info["payment_method"];
   data["payment_address"] =

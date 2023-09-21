@@ -1,9 +1,9 @@
 const { payment_message_parser } = require("../tools/message_tools/main");
 
 let correct_test_messages = [
+  "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
   "PP: Jon Doe/(803)991-8877 / Kate Doe/Zelle / +16783321134/ 151488-T-J/ $5.001/ $720",
   "PP: Jon Doe/ 8039918877/ / Cashapp/ $johnDoe / 151488-T-A0.5/ $50",
-  "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
   "PP: DISCOUNT FLOORING AND SUPPLY,LLC/ 770 676 0164/ Credit Card/ 152564-T-M/ $3,005.10/ $3080.10",
   "PP: Osceola Air LLC/ (407) 439-1995/  Credit Card / https://client.housecallpro.com/pay_invoice/43e46deb2efbdcc64ee0be0a06c02a08b5d7c369ee94ea2a1a70bf61d7cf0e36_e9142c3990e632ca80a97841983c930bcd81116455b128698285224d476ff99a/ 152632-T-J / $309.75 ",
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A0.5/ $50",

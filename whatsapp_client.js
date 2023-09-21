@@ -53,14 +53,14 @@ class WhatsappClient {
       try {
         if (message.body.startsWith("PP")) {
           const {output,data} = payment_message_parser(message.body);
-          if (output.startsWith("Format") === false) {
+          if (output?.startsWith("Format") === false) {
             this.messages_mapping[message.id] = data;
           }
           const reply = await message.reply(output);
           this.messages_mapping[reply.id["id"]] = output;
         } else if (message.body.startsWith("RR")) {
           const {output,data} = payment_message_parser(message.body);
-          if (output.startsWith("Format") === false) {
+          if (output?.startsWith("Format") === false) {
             this.messages_mapping[message.id];
           }
           const reply = await message.reply(output);
@@ -84,7 +84,8 @@ class WhatsappClient {
       if (
         APPROVER_NUMBERS.includes(
           message.id["participant"].replace("@c.us", "")
-        )
+        ) &&
+        message.reaction === reactions.thumbs_up
       ) {
         this.send_message_to_lambda_functions(
           this.messages_mapping[message.msgId["id"]]

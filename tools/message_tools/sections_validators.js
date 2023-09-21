@@ -137,7 +137,7 @@ function extract_amounts_and_message(inputString, is_rr_message) {
     message.pop();
     message.pop();
     const splitted_message_with_poped_amounts = [...message];
-    message = message.join("");
+    message = message.join("$");
     message = message.slice(0, -1);
 
     // Replace trailing "/ /" with "/"
