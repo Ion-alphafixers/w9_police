@@ -1,6 +1,7 @@
 const { payment_message_parser } = require("../tools/message_tools/main");
 
 let correct_test_messages = [
+  "PP: Mike Bramble / (404)338-7673 / Zelle / (786) 486-6985 / 156899-01-R-J / $600",
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
   "PP: Jon Doe/(803)991-8877 / Kate Doe/Zelle / +16783321134/ 151488-T-J/ $5.001/ $720",
   "PP: Jon Doe/ 8039918877/ / Cashapp/ $johnDoe / 151488-T-A0.5/ $50",
@@ -139,7 +140,7 @@ function run_test_cases(correct_test_cases_flag, wrong_test_cases_flag) {
     );
   }
 }
-run_test_cases(false, true);
+run_test_cases(true, false)
 module.exports = {
   correct_test_messages,
   wrong_test_messages,

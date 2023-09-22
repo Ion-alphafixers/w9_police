@@ -263,8 +263,11 @@ function check_for_amounts_with_no_currency_symbol(message) {
 }
 function is_valid_payment_tag(paymentTag) {
   try {
-    const purpose_test = validate_purpose(paymentTag.split("-")[2]);
-    let fm_test = paymentTag.split("-")[1].length <= 2;
+    const splitted_payment_tag = paymentTag.split("-");
+    const purpose_test = validate_purpose(
+      splitted_payment_tag[splitted_payment_tag.length - 1]
+    );
+    let fm_test = splitted_payment_tag[splitted_payment_tag - 2].length <= 2;
     return { purpose_test, fm_test };
   } catch (e) {
     return "Format error: payment tag wrongly formatted";
@@ -288,7 +291,7 @@ function extract_payment_tag(message) {
   let payment_tag = message.pop().trim();
   let payment_tag_validation = is_valid_payment_tag(payment_tag);
   var count_of_separators = (payment_tag.match(/-/g) || []).length;
-  if (count_of_separators != 2) {
+  if (count_of_separators < 2) {
     return "Format error: payment tag should contain 3 parts";
   }
   if (
