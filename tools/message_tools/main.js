@@ -1,4 +1,8 @@
-const { data_initializer, extracted_amounts_resolver } = require("./helpers");
+const {
+  data_initializer,
+  extracted_amounts_resolver,
+  capitalizeFirstLetter,
+} = require("./helpers");
 const validators = require("./sections_validators");
 const validators_lib = require("./validator_lib_validators");
 function payment_message_parser(message) {
@@ -26,21 +30,28 @@ function payment_message_parser(message) {
   const message_length_check = validators.check_number_of_slashes(message);
   if (message_length_check !== true) {
     // console.log(message_length_check);
-    return{output: message_length_check,data:{}}
+    return { output: message_length_check, data: {} };
   }
   let left_pop = validators.remove_from_left(message);
   // Test if the string contains an integer
   if (validators_lib.phone_validator(left_pop["first_part"].trim())) {
-    return{output: "Format error: tech name not found",data:{}}
+    return { output: "Format error: tech name not found", data: {} };
   } else if (/-?\d+/.test(left_pop["first_part"]) === true) {
-    return{output: "Format error: tech name or phone number wrongly formatted",data:{}}
+    return {
+      output: "Format error: tech name or phone number wrongly formatted",
+      data: {},
+    };
   }
 
   data["tech_name"] = left_pop["first_part"];
   left_pop = validators.remove_from_left(left_pop["rest_of_the_string"]);
   left_pop["first_part"] = left_pop["first_part"].replace(",", "-");
   if (validators_lib.phone_validator(left_pop["first_part"].trim()) === false) {
-    return{output: "Format error: tech/vendor phone number not found, please enter 9 digit tech phone number",data:{}}
+    return {
+      output:
+        "Format error: tech/vendor phone number not found, please enter 9 digit tech phone number",
+      data: {},
+    };
   } else {
     data["tech_phone"] = left_pop["first_part"];
   }
@@ -48,7 +59,7 @@ function payment_message_parser(message) {
     left_pop["rest_of_the_string"]
   );
   if (typeof extracted_note === "string") {
-    return{output: extracted_note,data:{}}
+    return { output: extracted_note, data: {} };
   }
   data["note"] = extracted_note["note"];
   // if (isNaN(parseInt(message[message.length - 1]))) {
@@ -59,7 +70,7 @@ function payment_message_parser(message) {
     is_rr_message
   );
   if (typeof extracted_amounts === "string") {
-    return{output: extracted_amounts,data:{}}
+    return { output: extracted_amounts, data: {} };
   }
   let resolved_amounts = extracted_amounts_resolver(
     data,
@@ -67,16 +78,19 @@ function payment_message_parser(message) {
     message
   );
   if (typeof resolved_amounts === "string") {
-    return{output: resolved_amounts,data:{}}
+    return { output: resolved_amounts, data: {} };
   } else if (parseFloat(data["amount"]) > parseFloat(data["total_amount"])) {
-    return{output: "Format error: amount larger than total amount",data:{}}
+    return {
+      output: "Format error: amount larger than total amount",
+      data: {},
+    };
   }
   const extracted_payement_tag = validators.extract_payment_tag(
     extracted_amounts["message"].replace(/\/+$/, "")
   );
   if (typeof extracted_payement_tag === "string") {
     console.log(extracted_payement_tag);
-    return{output: extracted_payement_tag,data:{}}
+    return { output: extracted_payement_tag, data: {} };
   }
   data["payment_tag"] = extracted_payement_tag["payment_tag"];
   data["wo_number"] = extracted_payement_tag["payment_tag"].split("-")[0];
@@ -96,7 +110,7 @@ function payment_message_parser(message) {
       extracted_tech_additional_name["message"]
     );
   if (typeof extracted_payment_info === "string") {
-    return{output: extracted_payment_info,data:{}}
+    return { output: extracted_payment_info, data: {} };
   }
   data["payment_method"] = extracted_payment_info["payment_method"];
   data["payment_address"] =
@@ -106,11 +120,12 @@ function payment_message_parser(message) {
   // console.log(extracted_tech_additional_name["message"]);
   // console.log(data);
   let output = "";
+  data["payment_method"] = capitalizeFirstLetter(data["payment_method"]);
 
   for (const [key, value] of Object.entries(data)) {
     output += `${key}: ${value}\n`;
   }
-  return {output,data};
+  return { output, data };
 }
 let test_messages = [
   "PP: Osceola Air LLC/ (407) 439-1995/  Credit Card / https://client.housecallpro.com/pay_invoice/43e46deb2efbdcc64ee0be0a06c02a08b5d7c369ee94ea2a1a70bf61d7cf0e36_e9142c3990e632ca80a97841983c930bcd81116455b128698285224d476ff99a/ 152632-T-J / $309.75 ",

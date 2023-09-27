@@ -314,7 +314,7 @@ function extract_payment_tag(message) {
 }
 function check_for_additional_tech_name(message) {
   message = message.split("/");
-  if (payment_methods.includes(message[0].trim())) {
+  if (payment_methods.includes(message[0].trim().toLowerCase())) {
     return {
       additional_tech_name: null,
       message: message.join("/"),
@@ -362,28 +362,31 @@ function extract_payment_method_and_payment_address(message) {
   if (message.length === 0) {
     return "Format Error: Payment message not constructed correctly";
   } else if (message.length === 1) {
-    if (message[0].trim() === "Credit" || message[0].trim() === "Credit Card") {
+    if (
+      message[0].trim().toLowerCase() === "credit" ||
+      message[0].trim().toLowerCase() === "credit card"
+    ) {
       return {
         payment_method: message[0].trim(),
         payment_address: null,
       };
-    } else if (payment_methods.includes(message[0].trim())) {
+    } else if (payment_methods.includes(message[0].trim().toLowerCase())) {
       return "Format Error: Payment adress not defined correctly";
-    } else if (payment_methods.includes(message[0].trim()) === false) {
+    } else if (payment_methods.includes(message[0].trim().toLowerCase()) === false) {
       return `Format error: payment method not recognized, payment method has to be one of the following ${payment_methods.join(
         ", "
       )}`;
     }
   } else if (message.length === 2) {
-    if (payment_methods.includes(message[0].trim()) === false) {
+    if (payment_methods.includes(message[0].trim().toLowerCase()) === false) {
       return `Format error: payment method not recognized, payment method has to be one of the following ${payment_methods.join(
         ", "
       )}`;
     }
-    if (message[0].trim() === "Zelle") {
+    if (message[0].trim().toLowerCase() === "zelle") {
       if (
-        (validators.email_validator(message[1].trim()) ||
-          validators.phone_validator(message[1].trim())) === true
+        (validators.email_validator(message[1].trim().toLowerCase()) ||
+          validators.phone_validator(message[1].trim().toLowerCase())) === true
       ) {
         return {
           payment_method: message[0].trim(),
@@ -392,7 +395,7 @@ function extract_payment_method_and_payment_address(message) {
       } else {
         return "Warning: payment address for Zelle should be phone number or email address";
       }
-    } else if (message[0].trim() === "ACH") {
+    } else if (message[0].trim().toLowerCase() === "ach") {
       const payment_address = message[1].trim();
 
       if (assert_ach_payment_info(payment_address) === true) {
@@ -403,7 +406,7 @@ function extract_payment_method_and_payment_address(message) {
       } else {
         return "warning: payment address for ACH should be of the format Rout# xxxxxx, Acct # xxxxxx;  where routing numbers are 9 digits long and acct numbers up to 17 digits";
       }
-    } else if (message[0].trim() === "Cashapp") {
+    } else if (message[0].trim().toLowerCase() === "cashapp") {
       const payment_address = message[1].trim();
       if (payment_address.startsWith("$") === false) {
         return "warning: payment address for Cashapp has to start with $";
@@ -412,7 +415,7 @@ function extract_payment_method_and_payment_address(message) {
         payment_method: message[0].trim(),
         payment_address: message[1].trim(),
       };
-    } else if (message[0].trim() === "Venmo") {
+    } else if (message[0].trim().toLowerCase() === "venmo") {
       const payment_address = message[1].trim();
       if (payment_address.startsWith("@") === false) {
         return "warning: payment address for Venmo has to start with @";

@@ -1,6 +1,7 @@
 const { payment_message_parser } = require("../tools/message_tools/main");
 
 let correct_test_messages = [
+  "PP: Ekanem Ekanem/ 5012478773 / ZELLE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
   "PP: Mike Bramble / (404)338-7673 / Zelle / (786) 486-6985 / 156899-01-R-J / $600",
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
   "PP: Jon Doe/(803)991-8877 / Kate Doe/Zelle / +16783321134/ 151488-T-J/ $5.001/ $720",
@@ -14,8 +15,8 @@ let correct_test_messages = [
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
   "PP: Joe Garcia/ (803)457-3409/Venmo/ @Jgarc/ 151488-T-A2/ $75 /$175",
   "PP: Abe Bon/ 512-981-3033/ AB plumbing/Credit/704465-D-A+J/ $300",
-  "PP: DISCOUNT FLOORING AND SUPPLY,LLC/ 770 676 0164/ Credit Card/ 152564-T-M/ $3,005.10/ $3080.10",
-  "PP: Jake Silva/ (678)332-1134/ ACH/ (Rout#026027315, Acct #63103380)/132649-A-R/ $1,200.02",
+  "PP: DISCOUNT FLOORING AND SUPPLY,LLC/ 770 676 0164/ credit Card/ 152564-T-M/ $3,005.10/ $3080.10",
+  "PP: Jake Silva/ (678)332-1134/ ACH/ (Rout#026027315, Acct #631013380)/132649-A-R/ $1,200.02",
   "PP: John Smith/ (555)555-5555/Zelle/ johnsmith@email.com/ 123-T-A/ $100",
   "PP: Mary Johnson/ (555)456-7890/Venmo/ @maryj/ 456-T-A2/ $75 /$175",
   "PP: Alex Hernandez/ (987)654-3210/Paypal/ alexh@email.com/ 789-T-A/ $50 / $150 // Paid for services",
@@ -27,10 +28,27 @@ let correct_test_messages = [
   "PP: Sarah Smith/ (999)999-9999/Venmo/ @sarahs/ 999-T-A/ $60 / $160 // Payment for groceries",
   "PP: James Brown/ (444)444-4444/Credit/ www.example.com/ 444-T-A/ $5000",
   "PP: John Doe/ (555)456-7890/Check/ 7 Main St / 5555-T-M/ $1,000",
-  "PP: Jane Johnson/ (222)333-4444/Cashapp/ janej/ 222-T-J2/ $125 /$275",
+  "PP: Jane Johnson/ (222)333-4444/Cashapp/ $janej/ 222-T-J2/ $125 /$275",
   "PP: Sarah Smith/ (999)999-9999/Paypal/ @sarahs/ 999-T-A/ $60 / $160",
   "PP: XYZ Inc./ (555)222-3333/Credit/ 123456-D-M/ $3,000.50",
   "PP: Jon Doe/ (803)555,5555/Zelle / +16783321134/ 151488-T-J/ $500/ $720",
+  "PP: Ekanem Ekanem/ 5012478773 / zelle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zElle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zeLle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zelLe / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zellE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zELle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zElLE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zEllE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zeLLe / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zeLlE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zelLe / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / zelLE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / Zelle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / ZElle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / ZeLle / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / ZelLe / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / ZellE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
 ];
 
 let wrong_test_messages = {

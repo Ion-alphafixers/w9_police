@@ -49,7 +49,16 @@ function extracted_amounts_resolver(
       "warning: payment amount exceeds $5,000, proceed with caution/";
   }
 }
+function capitalizeFirstLetter(inputString) {
+  // Check if the inputString is empty or null
+  if (!inputString) return inputString;
+
+  // Capitalize the first letter and concatenate it with the rest of the string
+  return inputString.charAt(0).toUpperCase() + inputString.slice(1).toLowerCase();
+}
+
 module.exports = {
+  capitalizeFirstLetter,
   data_initializer,
   extract_url_controller,
   extracted_amounts_resolver,
