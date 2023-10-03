@@ -11,6 +11,7 @@ async function message_handler(this_object,message){
             this_object.reply_messages_id_object_mapping[reply.id["id"]] = reply;
             this_object.reply_messages_id_text_mapping[reply.id["id"]] = data;
             this_object.incomming_to_reply_mapping[message.id["id"]] = [reply];
+            this_object.timestamp_mappings[message.timestamp] = [reply]
           }
         } else if (message.body.startsWith("RR")) {
           const { output, data } = payment_message_parser(message.body);
@@ -21,6 +22,7 @@ async function message_handler(this_object,message){
             this_object.reply_messages_id_object_mapping[reply.id["id"]] = reply;
             this_object.reply_messages_id_text_mapping[reply.id["id"]] = data;
             this_object.incomming_to_reply_mapping[message.id["id"]] = [reply];
+            this_object.timestamp_mappings[message.timestamp] = [reply];
           }
         }
       } catch (e) {

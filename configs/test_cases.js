@@ -1,7 +1,7 @@
 const { payment_message_parser } = require("../tools/message_tools/main");
 
 let correct_test_messages = [
-  "PP: Ekanem Ekanem/ 5012478773 / ZELLE / +16783321134 / 151488-T-A0.5/ $27.74 // Ladder Rental",
+  "PP: Ekanem Ekanem/ 5012478773 / ZELLE / +16783321134 / 151488-T-A0.5/ $27.74/ // Ladder Rental",
   "PP: Mike Bramble / (404)338-7673 / Zelle / (786) 486-6985 / 156899-01-R-J / $600",
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
   "PP: Jon Doe/(803)991-8877 / Kate Doe/Zelle / +16783321134/ 151488-T-J/ $5.001/ $720",

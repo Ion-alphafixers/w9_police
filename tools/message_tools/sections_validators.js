@@ -255,6 +255,12 @@ function check_for_amounts_with_no_currency_symbol(message) {
     ) {
       // $500/$720 test case
       return "Format error: payment amount should be dollar amount. Example: $50";
+    } else if (
+      splitted_message.length === 5 &&
+      isNaN(secondToLastItem) &&
+      splitted_message[secondToLastIndex].includes("$")
+    ) {
+      return;
     }
   } else {
     return "Format error: Payment message not constructed correctly";
@@ -372,7 +378,9 @@ function extract_payment_method_and_payment_address(message) {
       };
     } else if (payment_methods.includes(message[0].trim().toLowerCase())) {
       return "Format Error: Payment adress not defined correctly";
-    } else if (payment_methods.includes(message[0].trim().toLowerCase()) === false) {
+    } else if (
+      payment_methods.includes(message[0].trim().toLowerCase()) === false
+    ) {
       return `Format error: payment method not recognized, payment method has to be one of the following ${payment_methods.join(
         ", "
       )}`;

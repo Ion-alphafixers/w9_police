@@ -15,6 +15,7 @@ class WhatsappClient {
     this.reply_messages_id_object_mapping = {};
     this.reply_messages_id_text_mapping = {};
     this.incomming_to_reply_mapping = {};
+    this.timestamp_mappings = {}
     this.client = new Client({
       puppeteer: {
         args: ["--no-sandbox"],
@@ -97,12 +98,33 @@ class WhatsappClient {
       }
     });
   }
+  delete_listener() {
+    this.client.on("message_revoke_everyone", (message) => {
+      console.log()
+      // console.log(message);
+      // const reply_id =
+      //   this.incomming_to_reply_mapping[message.id["id"]][
+      //     this.incomming_to_reply_mapping[message.id["id"]].length - 1
+      //   ].id["id"];
+
+      this.timestamp_mappings[message.timestamp][
+        this.timestamp_mappings[message.timestamp].length - 1
+      ].delete(true);
+      delete this.timestamp_mappings[message.timestamp]
+
+      // delete this.incoming_messages_id_object_mapping[message.id["id"]];
+      // delete this.incomming_to_reply_mapping[message.id["id"]];
+      // delete this.reply_messages_id_text_mapping[reply_id];
+      // delete this.reply_messages_id_object_mapping[reply_id];
+    });
+  }
   initialize_listeners() {
     this.qr_code_listener();
     this.client_ready_listener();
     this.message_listener();
     this.edit_message_listener();
     this.reaction_listener();
+    this.delete_listener()
 
     this.client.initialize();
   }
