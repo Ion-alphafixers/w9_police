@@ -88,7 +88,7 @@ class WhatsappClient {
 
       if (
         APPROVER_NUMBERS.includes(
-          message.id["participant"].replace("@c.us", "")
+          message.id["remote"].replace("@c.us", "")
         ) &&
         message.reaction === reactions.thumbs_up
       ) {
