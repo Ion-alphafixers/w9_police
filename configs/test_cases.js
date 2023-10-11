@@ -1,6 +1,8 @@
 const { payment_message_parser } = require("../tools/message_tools/main");
 
 let correct_test_messages = [
+  "PP:Douglas Reyes/(813) 382 0344/Zelle/(813) 382 0344/EL-93701369547-LHG-A/$80",
+  "PP: Michael Rowland / (904)680-8833 / Home Depot / Credit  / 431689-BN-M1 / $71.07 / $282.07",
   "PP: Ekanem Ekanem/ 5012478773 / ZELLE / +16783321134 / 151488-T-A0.5/ $27.74/ // Ladder Rental",
   "PP: Mike Bramble / (404)338-7673 / Zelle / (786) 486-6985 / 156899-01-R-J / $600",
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A/ $50 / $100",
@@ -54,6 +56,7 @@ let correct_test_messages = [
 let wrong_test_messages = {
   "Invalid Payment Amount Format": [
     "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A0.5/ $5,00",
+    "PP: DISCOUNT FLOORING AND SUPPLY,LLC/ 770 676 0164/ Credit Card/ 152564-T-M/ $3005.10/ $3080.10",
     "PP: Joe Garcia/ (803)457-3409/Venmo/ @Jgarc/ 151488-T-A2/ $75.00.00 /$175",
   ],
   "Invalid Payment Address Format": [
@@ -158,7 +161,7 @@ function run_test_cases(correct_test_cases_flag, wrong_test_cases_flag) {
     );
   }
 }
-run_test_cases(true, false)
+run_test_cases(true, false);
 module.exports = {
   correct_test_messages,
   wrong_test_messages,

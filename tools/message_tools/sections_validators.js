@@ -97,6 +97,34 @@ function check_for_negative_amounts(
     console.log();
   }
 }
+function check_matches_format(matches){
+  const common_checks = (match) =>{
+    let decimal_split = match.split(".")
+    if (decimal_split.length > 2){
+      return "Format error: multiple decimal separator not allowed."
+    }
+    else if (decimal_split.length === 2){
+      if (decimal_split[1].length > 2){
+        return "Format error: 2 decimal number max allowed."
+      }
+    }
+    let whole_number_split = decimal_split[0].split(",")
+    for(let index=0;index<whole_number_split.length;index++){
+      if (whole_number_split[index].length < 3 && index !== 0){
+        return "Format error: thousands separator not well formatted."
+      }
+      else if (whole_number_split[index].length > 3) {
+        return "Format error: thousands separator not well formatted.";
+      }
+    }
+  }
+  for(let match of matches){
+    let match_check = common_checks(match)
+    if (typeof match_check === "string"){
+      return match_check
+    }
+  }
+}
 function extract_amounts_and_message(inputString, is_rr_message) {
   const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g;
   // if (/^\d{1,3}(?:,\d{3})*(?![\d,])$/.test(inputString) === false) {
@@ -156,6 +184,10 @@ function extract_amounts_and_message(inputString, is_rr_message) {
     const regex =
       /\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)\s*\/\s*\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)/g;
     if (!regex.test(inputString)) {
+      let matches_check_report = check_matches_format(matches)
+      if (typeof matches_check_report === "string"){
+        return matches_check_report
+      }
       return "Format error: the dollar amount should be separated by / only";
     }
     const [amount, totalAmount] = matches.map((match) =>
@@ -269,11 +301,11 @@ function check_for_amounts_with_no_currency_symbol(message) {
 }
 function is_valid_payment_tag(paymentTag) {
   try {
-    const splitted_payment_tag = paymentTag.split("-");
+    const splitted_payment_tag = paymentTag.split("-");  
     const purpose_test = validate_purpose(
       splitted_payment_tag[splitted_payment_tag.length - 1]
     );
-    let fm_test = splitted_payment_tag[splitted_payment_tag - 2].length <= 2;
+    let fm_test = splitted_payment_tag[splitted_payment_tag.length - 2].length <= 3;
     return { purpose_test, fm_test };
   } catch (e) {
     return "Format error: payment tag wrongly formatted";

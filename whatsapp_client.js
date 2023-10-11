@@ -15,7 +15,7 @@ class WhatsappClient {
     this.reply_messages_id_object_mapping = {};
     this.reply_messages_id_text_mapping = {};
     this.incomming_to_reply_mapping = {};
-    this.timestamp_mappings = {}
+    this.timestamp_mappings = {};
     this.client = new Client({
       puppeteer: {
         args: ["--no-sandbox"],
@@ -66,20 +66,24 @@ class WhatsappClient {
   }
   edit_message_listener() {
     this.client.on("message_edit", async (message) => {
-      const reply_id =
+      try {
+        const reply_id =
+          this.incomming_to_reply_mapping[message.id["id"]][
+            this.incomming_to_reply_mapping[message.id["id"]].length - 1
+          ].id["id"];
+
         this.incomming_to_reply_mapping[message.id["id"]][
           this.incomming_to_reply_mapping[message.id["id"]].length - 1
-        ].id["id"];
+        ].delete(true);
 
-      this.incomming_to_reply_mapping[message.id["id"]][
-        this.incomming_to_reply_mapping[message.id["id"]].length - 1
-      ].delete(true);
-
-      delete this.incoming_messages_id_object_mapping[message.id["id"]];
-      delete this.incomming_to_reply_mapping[message.id["id"]];
-      delete this.reply_messages_id_text_mapping[reply_id];
-      delete this.reply_messages_id_object_mapping[reply_id];
-      await message_handler(this, message);
+        delete this.incoming_messages_id_object_mapping[message.id["id"]];
+        delete this.incomming_to_reply_mapping[message.id["id"]];
+        delete this.reply_messages_id_text_mapping[reply_id];
+        delete this.reply_messages_id_object_mapping[reply_id];
+        await message_handler(this, message);
+      } catch (e) {
+        console.log(e);
+      }
     });
   }
   reaction_listener() {
@@ -87,9 +91,7 @@ class WhatsappClient {
       // console.log(message);
 
       if (
-        APPROVER_NUMBERS.includes(
-          message.id["remote"].replace("@c.us", "")
-        ) &&
+        APPROVER_NUMBERS.includes(message.id["remote"].replace("@c.us", "")) &&
         message.reaction === reactions.thumbs_up
       ) {
         this.send_message_to_lambda_functions(
@@ -100,22 +102,14 @@ class WhatsappClient {
   }
   delete_listener() {
     this.client.on("message_revoke_everyone", (message) => {
-      console.log()
-      // console.log(message);
-      // const reply_id =
-      //   this.incomming_to_reply_mapping[message.id["id"]][
-      //     this.incomming_to_reply_mapping[message.id["id"]].length - 1
-      //   ].id["id"];
-
-      this.timestamp_mappings[message.timestamp][
-        this.timestamp_mappings[message.timestamp].length - 1
-      ].delete(true);
-      delete this.timestamp_mappings[message.timestamp]
-
-      // delete this.incoming_messages_id_object_mapping[message.id["id"]];
-      // delete this.incomming_to_reply_mapping[message.id["id"]];
-      // delete this.reply_messages_id_text_mapping[reply_id];
-      // delete this.reply_messages_id_object_mapping[reply_id];
+      try {
+        this.timestamp_mappings[message.timestamp][
+          this.timestamp_mappings[message.timestamp].length - 1
+        ].delete(true);
+        delete this.timestamp_mappings[message.timestamp];
+      } catch (e) {
+        console.log(e);
+      }
     });
   }
   initialize_listeners() {
@@ -124,7 +118,7 @@ class WhatsappClient {
     this.message_listener();
     this.edit_message_listener();
     this.reaction_listener();
-    this.delete_listener()
+    this.delete_listener();
 
     this.client.initialize();
   }
