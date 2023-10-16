@@ -93,7 +93,9 @@ function payment_message_parser(message) {
     return { output: extracted_payement_tag, data: {} };
   }
   data["payment_tag"] = extracted_payement_tag["payment_tag"];
-  data["wo_number"] = extracted_payement_tag["payment_tag"].split("-")[0];
+  let splitted_payment_tag = extracted_payement_tag["payment_tag"].split("-");
+  data["wo_number"] = splitted_payment_tag.slice(0, -2).join("-");
+
   // REMOVE THE BELOW LOGIC TO TURN OFF THE TEST CASE 2 MENTIONED IN THE NOTION DISCUSSION
 
   let extracted_tech_additional_name =
