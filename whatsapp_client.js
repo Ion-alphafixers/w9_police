@@ -24,16 +24,26 @@ class WhatsappClient {
     });
     this.initialize_listeners();
   }
-  async send_message_to_lambda_functions(message) {
+  async send_message_to_lambda_functions(message, delete_request = false) {
     try {
-      const response = await fetch(
-        this.whatsapp_invoices_receiver_lambda_function_url,
-        {
-          method: "POST",
-          body: JSON.stringify(message),
-        }
-      );
-      console.log(response);
+      if (delete_request === true) {
+        const response = await fetch(
+          this.whatsapp_invoices_receiver_lambda_function_url,
+          {
+            method: "DELETE",
+            body: JSON.stringify(message),
+          }
+        );
+      } else {
+        const response = await fetch(
+          this.whatsapp_invoices_receiver_lambda_function_url,
+          {
+            method: "POST",
+            body: JSON.stringify(message),
+          }
+        );
+        console.log(response);
+      }
       console.log("Request sent");
     } catch (e) {
       console.log(e);
@@ -67,14 +77,12 @@ class WhatsappClient {
   edit_message_listener() {
     this.client.on("message_edit", async (message) => {
       try {
+        console.log(message.id["id"]);
         const reply_id =
           this.incomming_to_reply_mapping[message.id["id"]][
             this.incomming_to_reply_mapping[message.id["id"]].length - 1
           ].id["id"];
-
-        this.incomming_to_reply_mapping[message.id["id"]][
-          this.incomming_to_reply_mapping[message.id["id"]].length - 1
-        ].delete(true);
+        await this.incomming_to_reply_mapping[message.id["id"]][0].delete(true);
 
         delete this.incoming_messages_id_object_mapping[message.id["id"]];
         delete this.incomming_to_reply_mapping[message.id["id"]];
@@ -97,12 +105,23 @@ class WhatsappClient {
         this.send_message_to_lambda_functions(
           this.reply_messages_id_text_mapping[message.msgId["id"]]
         );
+      } else if (
+        APPROVER_NUMBERS.includes(message.id["remote"].replace("@c.us", "")) &&
+        message.reaction === reactions.remove
+      ) {
+        this.send_message_to_lambda_functions(
+          this.reply_messages_id_text_mapping[message.msgId["id"]],
+          true
+        );
       }
     });
   }
   delete_listener() {
     this.client.on("message_revoke_everyone", (message) => {
       try {
+        if (message.from.startsWith("13219997434@c.us")) {
+          return;
+        }
         this.timestamp_mappings[message.timestamp][
           this.timestamp_mappings[message.timestamp].length - 1
         ].delete(true);
