@@ -24,8 +24,8 @@ class WhatsappClient {
     });
     this.initialize_listeners();
   }
-  async send_message_to_lambda_functions(message, delete_request = false) {
-    try {
+    async send_message_to_lambda_functions(message, delete_request = false) {
+        try {
       if (delete_request === true) {
         const response = await fetch(
           this.whatsapp_invoices_receiver_lambda_function_url,
@@ -72,7 +72,7 @@ class WhatsappClient {
       //   console.log(message);
       console.log(message.body);
       await message_handler(this, message);
-    });
+          });
   }
   edit_message_listener() {
     this.client.on("message_edit", async (message) => {
@@ -119,7 +119,7 @@ class WhatsappClient {
   delete_listener() {
     this.client.on("message_revoke_everyone", (message) => {
       try {
-        if (message.from.startsWith("13219997434@c.us")) {
+        if (message.from.startsWith("13055035308@c.us")) {
           return;
         }
         this.timestamp_mappings[message.timestamp][
@@ -130,6 +130,9 @@ class WhatsappClient {
         console.log(e);
       }
     });
+  }
+  async get_chats(){
+    this.client.getChats()
   }
   initialize_listeners() {
     this.qr_code_listener();

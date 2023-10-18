@@ -126,10 +126,15 @@ function check_matches_format(matches){
   }
 }
 function extract_amounts_and_message(inputString, is_rr_message) {
+  let cashapp_placeholder = ""
   const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g;
   // if (/^\d{1,3}(?:,\d{3})*(?![\d,])$/.test(inputString) === false) {
   //   return "Format error: , separator should define a thousand separator";
   // }
+if(inputString.trim().toLowerCase().startsWith("cashapp")){
+  cashapp_placeholder = inputString.split("/").splice(0,2).join("/")
+  inputString = inputString.split("/").splice(2).join("/")
+}
   if (!/\$\d/.test(inputString)) {
     return "Format error: No dollar amounts found";
   }
@@ -140,15 +145,17 @@ function extract_amounts_and_message(inputString, is_rr_message) {
   if (typeof amounts_with_no_currency_symbol_check === "string") {
     return amounts_with_no_currency_symbol_check;
   }
-  const matches = inputString.match(regex);
-
-  if (!matches) {
-    return {
-      amount: null,
-      total_amount: null,
-      message: inputString.trim(),
-    }; // No matches found, treat the whole string as the message
-  }
+  let matches = inputString.match(regex);
+  // if (inputString.trim().toLowerCase().startsWith("cashapp")){
+  //   matches = matches.splice(1)
+  // }
+    if (!matches) {
+      return {
+        amount: null,
+        total_amount: null,
+        message: inputString.trim(),
+      }; // No matches found, treat the whole string as the message
+    }
 
   if (matches.length === 2) {
     const negative_amount_checker = check_for_negative_amounts(
@@ -197,7 +204,7 @@ function extract_amounts_and_message(inputString, is_rr_message) {
     return {
       amount,
       total_amount: totalAmount,
-      message,
+      message: cashapp_placeholder === "" ? message : `${cashapp_placeholder}/${message}`,
     };
   } else if (matches.length === 1) {
     const negative_amount_checker = check_for_negative_amounts(
@@ -219,13 +226,13 @@ function extract_amounts_and_message(inputString, is_rr_message) {
     return {
       amount,
       total_amount: null,
-      message,
+      message:cashapp_placeholder === "" ? message : `${cashapp_placeholder}/${message}`,
     };
   } else {
     return {
       amount: null,
       total_amount: null,
-      message: inputString.trim(),
+      message: (cashapp_placeholder === "" ? inputString : `${cashapp_placeholder}/${inputString}`).trim(),
     }; // No matches found or insufficient matches found
   }
 }
@@ -305,7 +312,7 @@ function is_valid_payment_tag(paymentTag) {
     const purpose_test = validate_purpose(
       splitted_payment_tag[splitted_payment_tag.length - 1]
     );
-    let fm_test = splitted_payment_tag[splitted_payment_tag.length - 2].length <= 3;
+    let fm_test = splitted_payment_tag[splitted_payment_tag.length - 2].trim().length <= 3;
     return { purpose_test, fm_test };
   } catch (e) {
     return "Format error: payment tag wrongly formatted";
