@@ -24,8 +24,43 @@ class WhatsappClient {
     });
     this.initialize_listeners();
   }
-    async send_message_to_lambda_functions(message, delete_request = false) {
-        try {
+  whatsapp_raw_message_to_json(message) {
+    // Input data
+    var inputString = message;
+    // Split the input string into key-value pairs
+    for (let element of [
+      "tech_name",
+      "tech_phone",
+      "additional_tech_name",
+      "payment_method",
+      "payment_address",
+      "payment_tag",
+      "amount",
+      "total_amount",
+      "note",
+      "warnings",
+    ]){
+      inputString = inputString.replace(element,`/#SEPARATOR#${element}`)
+    }
+      var keyValuePairs = inputString.split("/#SEPARATOR#");
+
+    // Create an empty object to store the key-value pairs
+    var dataObject = {};
+
+    // Iterate through the key-value pairs and populate the object
+    for (var i = 0; i < keyValuePairs.length; i += 1) {
+      var curr_element = keyValuePairs[i].split(":");
+      var key = curr_element[0];
+      var value = curr_element[1].replace("\n","");
+      dataObject[key] = value === "null" ? null : value;
+    }
+
+    // Convert the object to JSON
+    // return JSON.stringify(dataObject);
+    return JSON.stringify(dataObject);
+  }
+  async send_message_to_lambda_functions(message, delete_request = false) {
+    try {
       if (delete_request === true) {
         const response = await fetch(
           this.whatsapp_invoices_receiver_lambda_function_url,
@@ -39,7 +74,7 @@ class WhatsappClient {
           this.whatsapp_invoices_receiver_lambda_function_url,
           {
             method: "POST",
-            body: JSON.stringify(message),
+            body: this.whatsapp_raw_message_to_json(message),
           }
         );
         console.log(response);
@@ -69,10 +104,8 @@ class WhatsappClient {
   }
   message_listener() {
     this.client.on("message", async (message) => {
-      //   console.log(message);
-      console.log(message.body);
       await message_handler(this, message);
-          });
+    });
   }
   edit_message_listener() {
     this.client.on("message_edit", async (message) => {
@@ -94,17 +127,18 @@ class WhatsappClient {
       }
     });
   }
-  reaction_listener() {
-    this.client.on("message_reaction", (message) => {
-      // console.log(message);
 
+  reaction_listener() {
+    this.client.on("message_reaction", async (message) => {
+      // console.log(message);
       if (
         APPROVER_NUMBERS.includes(message.id["remote"].replace("@c.us", "")) &&
         message.reaction === reactions.thumbs_up
       ) {
-        this.send_message_to_lambda_functions(
-          this.reply_messages_id_text_mapping[message.msgId["id"]]
+        let message_object = await this.get_chat_message(
+          message.msgId["_serialized"]
         );
+        this.send_message_to_lambda_functions(message_object.body);
       } else if (
         APPROVER_NUMBERS.includes(message.id["remote"].replace("@c.us", "")) &&
         message.reaction === reactions.remove
@@ -131,8 +165,11 @@ class WhatsappClient {
       }
     });
   }
-  async get_chats(){
-    this.client.getChats()
+  async get_chats() {
+    console.log(await this.client.getChats());
+  }
+  async get_chat_message(message_id) {
+    return await this.client.getMessageById(message_id);
   }
   initialize_listeners() {
     this.qr_code_listener();
