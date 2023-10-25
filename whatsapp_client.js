@@ -8,6 +8,8 @@ const { message_handler } = require("./tools/utils/message_handler");
 
 class WhatsappClient {
   constructor() {
+    this.tech_total_amount_paid_lambda_function_url =
+      lambda_functions_urls.TECH_TOTAL_PAID_LAMBDA_FUNCTION;
     this.whatsapp_invoices_receiver_lambda_function_url =
       lambda_functions_urls.WHATSAPP_INVOICES_RECEIVER;
     this.reactions = reactions;
@@ -39,10 +41,10 @@ class WhatsappClient {
       "total_amount",
       "note",
       "warnings",
-    ]){
-      inputString = inputString.replace(element,`/#SEPARATOR#${element}`)
+    ]) {
+      inputString = inputString.replace(element, `/#SEPARATOR#${element}`);
     }
-      var keyValuePairs = inputString.split("/#SEPARATOR#");
+    var keyValuePairs = inputString.split("/#SEPARATOR#");
 
     // Create an empty object to store the key-value pairs
     var dataObject = {};
@@ -51,13 +53,24 @@ class WhatsappClient {
     for (var i = 0; i < keyValuePairs.length; i += 1) {
       var curr_element = keyValuePairs[i].split(":");
       var key = curr_element[0];
-      var value = curr_element[1].replace("\n","");
+      var value = curr_element[1].replace("\n", "");
       dataObject[key] = value === "null" ? null : value;
     }
 
     // Convert the object to JSON
     // return JSON.stringify(dataObject);
     return JSON.stringify(dataObject);
+  }
+
+  async get_tech_total_paid(tech_name) {
+    const response = await fetch(
+      `${this.tech_total_amount_paid_lambda_function_url}?tech_name=${tech_name}`,
+      {
+        method: "GET",
+      }
+    );
+    const result = await response.json();
+    return result[0];
   }
   async send_message_to_lambda_functions(message, delete_request = false) {
     try {
@@ -132,7 +145,9 @@ class WhatsappClient {
     this.client.on("message_reaction", async (message) => {
       // console.log(message);
       if (
-        APPROVER_NUMBERS.includes(message.id["remote"].replace("@c.us", "")) &&
+        APPROVER_NUMBERS.includes(
+          message.id["participant"].replace("@c.us", "")
+        ) &&
         message.reaction === reactions.thumbs_up
       ) {
         let message_object = await this.get_chat_message(
