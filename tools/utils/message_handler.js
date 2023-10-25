@@ -9,10 +9,10 @@ async function message_handler(this_object, message) {
   if (message.body.startsWith("PP")) {
     let { output, data } = payment_message_parser(message.body);
     let tech_total_paid = await this_object.get_tech_total_paid(
-      data["tech_name"]
+      data["tech_name"].trim()
     );
     let additional_tech_total_paid = await this_object.get_tech_total_paid(
-      data["additional_tech_name"]
+      data["additional_tech_name"].trim()
     );
     output = `${output}tech_total_paid:${
       tech_total_paid !== null ? tech_total_paid : 0
