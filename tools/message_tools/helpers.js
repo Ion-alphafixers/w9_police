@@ -48,6 +48,7 @@ function extracted_amounts_resolver(
     data["warnings"] +=
       "warning: payment amount exceeds $5,000, proceed with caution/";
   }
+
 }
 function capitalizeFirstLetter(inputString) {
   // Check if the inputString is empty or null

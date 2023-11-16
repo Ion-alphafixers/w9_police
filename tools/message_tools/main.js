@@ -3,9 +3,13 @@ const {
   extracted_amounts_resolver,
   capitalizeFirstLetter,
 } = require("./helpers");
+const validate = require("../../tools/message_tools/checkPaymentTag");
+
+const w9Validator = require("../../tools/message_tools/getTotalAmounts");
 const validators = require("./sections_validators");
 const validators_lib = require("./validator_lib_validators");
-function payment_message_parser(message) {
+
+async function payment_message_parser(message) {
   let data = data_initializer();
   const is_rr_message = message.includes("RR") && message.startsWith("RR");
   // console.log(message);
@@ -96,6 +100,7 @@ function payment_message_parser(message) {
   let splitted_payment_tag = extracted_payement_tag["payment_tag"].split("-");
   data["wo_number"] = splitted_payment_tag.slice(0, -2).join("-");
 
+  
   // REMOVE THE BELOW LOGIC TO TURN OFF THE TEST CASE 2 MENTIONED IN THE NOTION DISCUSSION
 
   let extracted_tech_additional_name =
@@ -123,7 +128,23 @@ function payment_message_parser(message) {
   // console.log(data);
   let output = "";
   data["payment_method"] = capitalizeFirstLetter(data["payment_method"]);
-
+  let validTag =  validate.checkTag(data["payment_tag"]);
+    if (!validTag) {
+      data["warnings"] +=
+        "Please enter tech quote before finalizing assessment payment .";
+    }
+    let totalVal
+    if(data['additional_tech_name']){
+      totalVal =await w9Validator.getW9(data["additional_tech_name"]);
+    }else{
+       totalVal = await w9Validator.getW9(data["tech_name"]);
+    }
+    if(totalVal > 600){
+       data["warnings"] +=
+         "Total payment for tech exceeds $600, please include W9 . ";
+    }
+ 
+    
   for (const [key, value] of Object.entries(data)) {
     output += `${key}: ${value}\n`;
   }

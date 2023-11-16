@@ -319,7 +319,7 @@ function is_valid_payment_tag(paymentTag) {
   }
 }
 function validate_purpose(purpose) {
-  const regex = /^[AMJR](\d+|\d*\.\d{1})?$/;
+  const regex = /^[AMJR](\d+|\d*\.\d{1,2})?$/;
   const elements = purpose.split("+");
 
   for (const element of elements) {

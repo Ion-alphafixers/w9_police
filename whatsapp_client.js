@@ -146,7 +146,7 @@ class WhatsappClient {
       // console.log(message);
       if (
         APPROVER_NUMBERS.includes(
-          message.id["participant"].replace("@c.us", "")
+          message.id["participant"]?.replace("@c.us", "")
         ) &&
         message.reaction === reactions.thumbs_up
       ) {
