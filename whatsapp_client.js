@@ -143,13 +143,14 @@ class WhatsappClient {
 
   reaction_listener() {
     this.client.on("message_reaction", async (message) => {
-      // console.log(message);
+      console.log(message);
       if (
         APPROVER_NUMBERS.includes(
           message.id["participant"]?.replace("@c.us", "")
         ) &&
         message.reaction === reactions.thumbs_up
       ) {
+        console.log(message)
         let message_object = await this.get_chat_message(
           message.msgId["_serialized"]
         );
