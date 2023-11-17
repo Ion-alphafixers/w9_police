@@ -100,24 +100,44 @@ class WhatsappClient {
   //////////////////////////// Client methods
 
   async get_message_by_id(id) {
-    return await this.client.getMessageById(id);
+    try {
+       return await this.client.getMessageById(id);
+    } catch (error) {
+      console.log(error)
+    }
+   
   }
 
   //////////////////////////////
 
   qr_code_listener() {
     this.client.on("qr", (qr) => {
-      qrcode.generate(qr, { small: true });
+      try {
+        qrcode.generate(qr, { small: true });
+      } catch (error) {
+        console.log(error)
+      }
+      
     });
   }
   client_ready_listener() {
     this.client.on("ready", () => {
-      console.log("Client is ready!");
+      try{
+        console.log("Client is ready!");
+      }catch(err){
+        console.log(err)
+      }
+      
     });
   }
   message_listener() {
     this.client.on("message", async (message) => {
-      await message_handler(this, message);
+      try {
+         await message_handler(this, message);
+      } catch (error) {
+        console.log(error)
+      }
+     
     });
   }
   edit_message_listener() {
@@ -142,28 +162,36 @@ class WhatsappClient {
   }
 
   reaction_listener() {
+    
     this.client.on("message_reaction", async (message) => {
-      console.log(message);
-      if (
-        APPROVER_NUMBERS.includes(
-          message.id["participant"]?.replace("@c.us", "")
-        ) &&
-        message.reaction === reactions.thumbs_up
-      ) {
-        console.log(message)
-        let message_object = await this.get_chat_message(
-          message.msgId["_serialized"]
-        );
-        this.send_message_to_lambda_functions(message_object.body);
-      } else if (
-        APPROVER_NUMBERS.includes(message.id["remote"].replace("@c.us", "")) &&
-        message.reaction === reactions.remove
-      ) {
-        this.send_message_to_lambda_functions(
-          this.reply_messages_id_text_mapping[message.msgId["id"]],
-          true
-        );
+      try {
+        console.log(message);
+        if (
+          APPROVER_NUMBERS.includes(
+            message.id["participant"]?.replace("@c.us", "")
+          ) &&
+          message.reaction === reactions.thumbs_up
+        ) {
+          console.log(message);
+          let message_object = await this.get_chat_message(
+            message.msgId["_serialized"]
+          );
+          this.send_message_to_lambda_functions(message_object.body);
+        } else if (
+          APPROVER_NUMBERS.includes(
+            message.id["remote"].replace("@c.us", "")
+          ) &&
+          message.reaction === reactions.remove
+        ) {
+          this.send_message_to_lambda_functions(
+            this.reply_messages_id_text_mapping[message.msgId["id"]],
+            true
+          );
+        }
+      } catch (error) {
+        console.log(error)
       }
+      
     });
   }
   delete_listener() {
