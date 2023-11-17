@@ -1,3 +1,2 @@
-2023/09/11-20:06:52.918 3358 Reusing MANIFEST C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\File System\Origins/MANIFEST-000001
-2023/09/11-20:06:52.918 3358 Recovering log #3
-2023/09/11-20:06:52.919 3358 Reusing old log C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\File System\Origins/000003.log 
+2023/11/17-02:09:02.903 518c Creating DB C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\File System\Origins since it was missing.
+2023/11/17-02:09:02.919 518c Reusing MANIFEST C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\File System\Origins/MANIFEST-000001

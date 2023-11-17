@@ -1,3 +1,2 @@
-2023/09/11-20:06:52.043 332c Reusing MANIFEST C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
-2023/09/11-20:06:52.044 332c Recovering log #3
-2023/09/11-20:06:52.044 332c Reusing old log C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\Local Storage\leveldb/000003.log 
+2023/11/17-02:08:55.648 5820 Creating DB C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\Local Storage\leveldb since it was missing.
+2023/11/17-02:08:55.663 5820 Reusing MANIFEST C:\Users\user\Desktop\w9_police\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
