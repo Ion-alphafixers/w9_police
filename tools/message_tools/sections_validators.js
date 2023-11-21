@@ -440,7 +440,7 @@ function extract_payment_method_and_payment_address(message) {
           payment_address: message[1].trim(),
         };
       } else {
-        return "Warning: payment address for Zelle should be phone number or email address";
+        return "Format Error: payment address for Zelle should be phone number or email address";
       }
     } else if (message[0].trim().toLowerCase() === "ach") {
       const payment_address = message[1].trim();
@@ -451,12 +451,12 @@ function extract_payment_method_and_payment_address(message) {
           payment_address: message[1].trim(),
         };
       } else {
-        return "warning: payment address for ACH should be of the format Rout# xxxxxx, Acct # xxxxxx;  where routing numbers are 9 digits long and acct numbers up to 17 digits";
+        return "Format Error: payment address for ACH should be of the format Rout# xxxxxx, Acct # xxxxxx;  where routing numbers are 9 digits long and acct numbers up to 17 digits";
       }
     } else if (message[0].trim().toLowerCase() === "cashapp") {
       const payment_address = message[1].trim();
       if (payment_address.startsWith("$") === false) {
-        return "warning: payment address for Cashapp has to start with $";
+        return "Format Error: payment address for Cashapp has to start with $";
       }
       return {
         payment_method: message[0].trim(),
@@ -465,7 +465,7 @@ function extract_payment_method_and_payment_address(message) {
     } else if (message[0].trim().toLowerCase() === "venmo") {
       const payment_address = message[1].trim();
       if (payment_address.startsWith("@") === false) {
-        return "warning: payment address for Venmo has to start with @";
+        return "Format Error: payment address for Venmo has to start with @";
       }
       return {
         payment_method: message[0].trim(),
