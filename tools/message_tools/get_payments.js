@@ -1,13 +1,16 @@
-const getPayments = async (wo_number , purpose) => {
+const getPayments = async (wo_number , purpose,is_Bkr) => {
   console.log(wo_number)
   console.log(purpose)
+  q = is_Bkr
+    ? `SELECT * FROM rbk_invoices where work_order_number = '${wo_number}' AND purpose = '${purpose}'`
+    : `SELECT * FROM payments where work_order_number = '${wo_number}' AND purpose = '${purpose}'`;
   try {
      const response = await fetch(
        "https://i3gzeqflqihryswsazg6cf7eja0xqysp.lambda-url.us-east-2.on.aws/",
        {
          method: "POST",
          body: JSON.stringify({
-           query: `SELECT * FROM payments where work_order_number = '${wo_number}' AND purpose = '${purpose}' `,
+           query: q,
          }),
        }
      );
@@ -26,11 +29,11 @@ const getPayments = async (wo_number , purpose) => {
 }; 
 
 let existingPaymentTag;
-let getexistingPaymentTag = async (paymentTag , wo_number) => {
+let getexistingPaymentTag = async (paymentTag , wo_number , is_Bkr) => {
   wo_number = wo_number.replace(/\s/g, "");
   let fm = paymentTag.replace(wo_number + "-", "").split("-")[0];
   let purpose = paymentTag.replace(wo_number + "-", "").split("-")[1];
-  existingPaymentTag = await getPayments(wo_number, purpose);
+  existingPaymentTag = await getPayments(wo_number, purpose,is_Bkr);
   console.log(existingPaymentTag);
   return existingPaymentTag
 };

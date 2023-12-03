@@ -2,14 +2,19 @@ const { APPROVER_NUMBERS } = require("../../configs/numbers");
 const { payment_message_parser } = require("../message_tools/main");
 const getexistingPaymentTag = require("../../tools/message_tools/get_payments");
 const getTotalAmounts = require("../../tools/message_tools/getTotalAmounts");
+const numbres = require("../../configs/group_numbers")
 async function message_handler(this_object, message) {
   // try {
 
   //   } catch (e) {
   //     console.log(e);
   //   }
+  let isBkr  = false
+  if(message.from === numbres.bkr_num){
+    isBkr = true
+  }
   if (message.body.startsWith("PP")) {
-    let { output, data } = await payment_message_parser(message.body);
+    let { output, data } = await payment_message_parser(message.body , isBkr);
     let tech_total_paid = await this_object.get_tech_total_paid(
       data["tech_name"]?.trim()
     );
@@ -40,10 +45,21 @@ async function message_handler(this_object, message) {
       }
     }
     if(!output.startsWith("Format")){
-        let x = await getexistingPaymentTag.getexistingPaymentTag(
+        console.log(this_object)
+        let x
+        if(message.from === numbres.alpha_fixers_num){ 
+          x = await getexistingPaymentTag.getexistingPaymentTag(
           data["payment_tag"],
-          data["wo_number"]
-        );
+          data["wo_number"],
+          false
+        )}
+        if (message.from === numbres.bkr_num) {
+          x = await getexistingPaymentTag.getexistingPaymentTag(
+            data["payment_tag"],
+            data["wo_number"],
+            true
+          );
+        };
 
         if (x) {
           output = "Duplicate payment tag detected";
@@ -51,15 +67,37 @@ async function message_handler(this_object, message) {
          let totalAmount = 0;
          console.log(data["additional_tech_name"]);
          if (data["additional_tech_name"]) {
-           totalAmount = await getTotalAmounts.getTotalAmounts(
-             data["additional_tech_name"],
-             data["wo_number"]
-           );
+          if(message.from === numbres.alpha_fixers_num){
+             totalAmount = await getTotalAmounts.getTotalAmounts(
+               data["additional_tech_name"],
+               data["wo_number"],
+               false
+             );
+          }
+          if (message.from === numbres.bkr_num) {
+            totalAmount = await getTotalAmounts.getTotalAmounts(
+              data["additional_tech_name"],
+              data["wo_number"],
+              true
+            );
+          }
+          
          } else {
-           totalAmount = await getTotalAmounts.getTotalAmounts(
-             data["tech_name"],
-             data["wo_number"]
-           );
+           if(message.from === numbres.alpha_fixers_num){
+             totalAmount = await getTotalAmounts.getTotalAmounts(
+               data["tech_name"],
+               data["wo_number"],
+               false
+             );
+           }
+           if (message.from === numbres.bkr_num) {
+             totalAmount = await getTotalAmounts.getTotalAmounts(
+               data["tech_name"],
+               data["wo_number"],
+               true
+             );
+           }
+          
          }
          console.log(data["total_amount"]);
          if (data["total_amount"] && totalAmount !== data["total_amount"]) {
@@ -83,7 +121,11 @@ async function message_handler(this_object, message) {
       this_object.timestamp_mappings[message.timestamp] = [reply];
     }
   } else if (message.body.startsWith("RR")) {
-    const { output, data } = payment_message_parser(message.body);
+    let isBkr = false;
+    if (message.from === numbres.bkr_num) {
+      isBkr = true;
+    }
+    const { output, data } = payment_message_parser(message.body, isBkr);
     const reply = await message.reply(output);
     if (output?.startsWith("Format") === false) {
       this_object.incoming_messages_id_object_mapping[message.id["id"]] =

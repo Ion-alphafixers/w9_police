@@ -113,7 +113,7 @@ function check_matches_format(matches){
       if (whole_number_split[index].length < 3 && index !== 0){
         return "Format error: thousands separator not well formatted."
       }
-      else if (whole_number_split[index].length > 3) {
+      else if (whole_number_split[index].length > 3 ) {
         return "Format error: thousands separator not well formatted.";
       }
     }
@@ -127,7 +127,7 @@ function check_matches_format(matches){
 }
 function extract_amounts_and_message(inputString, is_rr_message) {
   let cashapp_placeholder = ""
-  const regex = /\$[\d,]+\.\d{1,3}|\$[\d,]+/g;
+  const regex = /\$-?[\d,]+\.\d{1,3}|\$-?[\d,]+/g;;
   // if (/^\d{1,3}(?:,\d{3})*(?![\d,])$/.test(inputString) === false) {
   //   return "Format error: , separator should define a thousand separator";
   // }
@@ -135,7 +135,7 @@ if(inputString.trim().toLowerCase().startsWith("cashapp")){
   cashapp_placeholder = inputString.split("/").splice(0,2).join("/")
   inputString = inputString.split("/").splice(2).join("/")
 }
-  if (!/\$\d/.test(inputString)) {
+  if (!/\$-?\d+/.test(inputString)) {
     return "Format error: No dollar amounts found";
   }
 
@@ -189,7 +189,7 @@ if(inputString.trim().toLowerCase().startsWith("cashapp")){
       return "Format error: dollar sign not allowed inside payment-tag";
     }
     const regex =
-      /\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)\s*\/\s*\$(\d{1,3}(?:,\d{3})*(\.\d{1,3})?)/g;
+      /\$(\-?\d{1,3}(?:,\d{3})*(\.\d{1,3})?)\s*\/\s*\$(\-?\d{1,3}(?:,\d{3})*(\.\d{1,3})?)/g;
     if (!regex.test(inputString)) {
       let matches_check_report = check_matches_format(matches)
       if (typeof matches_check_report === "string"){

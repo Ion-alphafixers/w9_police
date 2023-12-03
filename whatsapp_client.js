@@ -5,13 +5,15 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const { payment_message_parser } = require("./tools/message_tools/main");
 const { APPROVER_NUMBERS } = require("./configs/numbers");
 const { message_handler } = require("./tools/utils/message_handler");
-
+const numbres = require("./configs/group_numbers")
 class WhatsappClient {
   constructor() {
     this.tech_total_amount_paid_lambda_function_url =
       lambda_functions_urls.TECH_TOTAL_PAID_LAMBDA_FUNCTION;
     this.whatsapp_invoices_receiver_lambda_function_url =
       lambda_functions_urls.WHATSAPP_INVOICES_RECEIVER;
+    this.whatsapp_rbk_invoices_receiver_lambda_function_url =
+      lambda_functions_urls.WHATSAPP_RBK_INVOICES_RECEIVER;
     this.reactions = reactions;
     this.incoming_messages_id_object_mapping = {};
     this.reply_messages_id_object_mapping = {};
@@ -72,11 +74,13 @@ class WhatsappClient {
     const result = await response.json();
     return result[0];
   }
-  async send_message_to_lambda_functions(message, delete_request = false) {
+  async send_message_to_lambda_functions(message, delete_request = false,isRbk=false) {
     try {
       if (delete_request === true) {
         const response = await fetch(
-          this.whatsapp_invoices_receiver_lambda_function_url,
+          !isRbk
+            ? this.whatsapp_invoices_receiver_lambda_function_url
+            : this.whatsapp_rbk_invoices_receiver_lambda_function_url,
           {
             method: "DELETE",
             body: JSON.stringify(message),
@@ -84,7 +88,9 @@ class WhatsappClient {
         );
       } else {
         const response = await fetch(
-          this.whatsapp_invoices_receiver_lambda_function_url,
+          !isRbk
+            ? this.whatsapp_invoices_receiver_lambda_function_url
+            : this.whatsapp_rbk_invoices_receiver_lambda_function_url,
           {
             method: "POST",
             body: this.whatsapp_raw_message_to_json(message),
@@ -133,6 +139,7 @@ class WhatsappClient {
   message_listener() {
     this.client.on("message", async (message) => {
       try {
+        console.log(message.from)
          await message_handler(this, message);
       } catch (error) {
         console.log(error)
@@ -166,6 +173,10 @@ class WhatsappClient {
     this.client.on("message_reaction", async (message) => {
       try {
         console.log(message);
+         let mess = await this.get_chat_message(
+           message.msgId["_serialized"]
+         );
+         console.log(mess)
         if (
           APPROVER_NUMBERS.includes(
             message.id["participant"]?.replace("@c.us", "")
@@ -176,17 +187,32 @@ class WhatsappClient {
           let message_object = await this.get_chat_message(
             message.msgId["_serialized"]
           );
-          this.send_message_to_lambda_functions(message_object.body);
+          message_object.to === numbres.alpha_fixers_num &&
+            this.send_message_to_lambda_functions(message_object.body);
+          message_object.to === numbres.bkr_num &&
+            this.send_message_to_lambda_functions(
+              message_object.body,
+              false,
+              true
+            );
         } else if (
           APPROVER_NUMBERS.includes(
             message.id["remote"].replace("@c.us", "")
           ) &&
           message.reaction === reactions.remove
         ) {
-          this.send_message_to_lambda_functions(
-            this.reply_messages_id_text_mapping[message.msgId["id"]],
-            true
-          );
+          message_object.to === numbres.alpha_fixers_num
+            && this.send_message_to_lambda_functions(
+                this.reply_messages_id_text_mapping[message.msgId["id"]],
+                true
+              )
+          message_object.to === numbres.bkr_num &&
+            this.send_message_to_lambda_functions(
+              this.reply_messages_id_text_mapping[message.msgId["id"]],
+              true,
+              true
+            );
+            
         }
       } catch (error) {
         console.log(error)
@@ -200,6 +226,8 @@ class WhatsappClient {
         if (message.from.startsWith("13055035308@c.us")) {
           return;
         }
+        const replyMessageId = message.id._serialized;
+
         this.timestamp_mappings[message.timestamp][
           this.timestamp_mappings[message.timestamp].length - 1
         ].delete(true);
@@ -209,6 +237,7 @@ class WhatsappClient {
       }
     });
   }
+
   async get_chats() {
     console.log(await this.client.getChats());
   }

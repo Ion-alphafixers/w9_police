@@ -9,7 +9,7 @@ const w9Validator = require("../../tools/message_tools/getTotalAmounts");
 const validators = require("./sections_validators");
 const validators_lib = require("./validator_lib_validators");
 
-async function payment_message_parser(message) {
+async function payment_message_parser(message , isBkr) {
   let data = data_initializer();
   const is_rr_message = message.includes("RR") && message.startsWith("RR");
   // console.log(message);
@@ -135,9 +135,9 @@ async function payment_message_parser(message) {
     }
     let totalVal
     if(data['additional_tech_name']){
-      totalVal =await w9Validator.getW9(data["additional_tech_name"]);
+      totalVal =await w9Validator.getW9(data["additional_tech_name"] , isBkr);
     }else{
-       totalVal = await w9Validator.getW9(data["tech_name"]);
+       totalVal = await w9Validator.getW9(data["tech_name"] , isBkr);
     }
     if(totalVal > 600){
        data["warnings"] +=
