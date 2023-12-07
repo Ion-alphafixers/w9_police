@@ -127,7 +127,8 @@ function check_matches_format(matches){
 }
 function extract_amounts_and_message(inputString, is_rr_message) {
   let cashapp_placeholder = ""
-  const regex = /\$-?[\d,]+\.\d{1,3}|\$-?[\d,]+/g;;
+  const regex = /-?\$-?[\d,]+\.\d{1,3}|-?\$-?[\d,]+/g;
+
   // if (/^\d{1,3}(?:,\d{3})*(?![\d,])$/.test(inputString) === false) {
   //   return "Format error: , separator should define a thousand separator";
   // }
@@ -171,6 +172,9 @@ if(inputString.trim().toLowerCase().startsWith("cashapp")){
     let message = inputString.split("$");
     message.pop();
     message.pop();
+    if(message[0][message[0].length-1]==="-"){
+      message[0]=message[0].slice(0, -1)
+    }
     const splitted_message_with_poped_amounts = [...message];
     message = message.join("$");
     message = message.slice(0, -1);

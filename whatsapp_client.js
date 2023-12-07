@@ -139,8 +139,8 @@ class WhatsappClient {
   message_listener() {
     this.client.on("message", async (message) => {
       try {
+        await message_handler(this, message);
         console.log(message.from)
-         await message_handler(this, message);
       } catch (error) {
         console.log(error)
       }
