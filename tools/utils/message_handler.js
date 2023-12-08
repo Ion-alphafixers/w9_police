@@ -24,27 +24,38 @@ async function message_handler(this_object, message) {
   }
   if (message.body.startsWith("PP")) {
     let { output, data } = await payment_message_parser(message.body, isBkr);
-    const wo_number_data =
-      await lambda_handler_instance.get_work_order_by_wo_number(
-        data["wo_number"].trim()
-      );
-      if (wo_number_data.length === 0){
-        message.reply(`WARNING: WO with wo number ${data["wo_number"].trim()} not found in clickup.`);
+    if (!output.startsWith("Format")) {
+      const wo_number_data =
+        await lambda_handler_instance.get_work_order_by_wo_number(
+          data["wo_number"].trim()
+        );
+      if (wo_number_data.length === 0) {
+        message.reply(
+          `WARNING: WO with wo number ${data[
+            "wo_number"
+          ].trim()} not found in clickup.`
+        );
       }
-    const company_name_from_db = wo_number_data[0].filter((element) => {
-      return element === "BKR" || element === "Alpha Fixers";
-    })[0];
-    if (message.from === numbres.bkr_num && company_name_from_db === "Alpha Fixers"){
-      message.reply(
-        `WARNING: Payment correlated to work order number ${data["wo_number"]} should be sent from Alpha Fixers payment group`
-      );
-      return
-    }
-    else if(message.from === numbres.alpha_fixers_num && company_name_from_db === "BKR"){
-      message.reply(
-        `WARNING: Payment correlated to work order number ${data["wo_number"]} should be sent from BKR payment group`
-      );
-      return;
+      const company_name_from_db = wo_number_data[0].filter((element) => {
+        return element === "BKR" || element === "Alpha Fixers";
+      })[0];
+      if (
+        message.from === numbres.bkr_num &&
+        company_name_from_db === "Alpha Fixers"
+      ) {
+        message.reply(
+          `WARNING: Payment correlated to work order number ${data["wo_number"]} should be sent from Alpha Fixers payment group`
+        );
+        return;
+      } else if (
+        message.from === numbres.alpha_fixers_num &&
+        company_name_from_db === "BKR"
+      ) {
+        message.reply(
+          `WARNING: Payment correlated to work order number ${data["wo_number"]} should be sent from BKR payment group`
+        );
+        return;
+      }
     }
     let tech_total_paid = await this_object.get_tech_total_paid(
       data["tech_name"]?.trim()
