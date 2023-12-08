@@ -28,7 +28,9 @@ async function message_handler(this_object, message) {
       await lambda_handler_instance.get_work_order_by_wo_number(
         data["wo_number"].trim()
       );
-      
+      if (wo_number_data.length === 0){
+        message.reply(`WARNING: WO with wo number ${data["wo_number"].trim()} not found in clickup.`);
+      }
     const company_name_from_db = wo_number_data[0].filter((element) => {
       return element === "BKR" || element === "Alpha Fixers";
     })[0];
