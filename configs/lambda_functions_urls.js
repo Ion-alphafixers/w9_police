@@ -6,6 +6,8 @@ const WHATSAPP_RBK_INVOICES_RECEIVER =
 
 const TECH_TOTAL_PAID_LAMBDA_FUNCTION =
   "https://xubqe6dyx7nkfdurudtt3rn3d40qvooi.lambda-url.us-east-2.on.aws";
+
+
 module.exports = {
   WHATSAPP_INVOICES_RECEIVER,
   TECH_TOTAL_PAID_LAMBDA_FUNCTION,

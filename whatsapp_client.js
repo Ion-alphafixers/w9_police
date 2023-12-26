@@ -86,6 +86,8 @@ class WhatsappClient {
             body: JSON.stringify(message),
           }
         );
+      
+        console.log(response);
       } else {
         const response = await fetch(
           !isRbk
@@ -197,22 +199,55 @@ class WhatsappClient {
             );
         } else if (
           APPROVER_NUMBERS.includes(
-            message.id["remote"].replace("@c.us", "")
+            message.id["participant"]?.replace("@c.us", "")
           ) &&
           message.reaction === reactions.remove
         ) {
-          message_object.to === numbres.alpha_fixers_num
-            && this.send_message_to_lambda_functions(
-                this.reply_messages_id_text_mapping[message.msgId["id"]],
-                true
-              )
-          message_object.to === numbres.bkr_num &&
+          message.id["remote"] === numbres.alpha_fixers_num &&
             this.send_message_to_lambda_functions(
-              this.reply_messages_id_text_mapping[message.msgId["id"]],
+              {
+                wo_number: mess.body.split("tech_name")[0].split(":")[1].trim(),
+                tech_name: mess.body
+                  .split("tech_name:")[1]
+                  .split("tech_phone")[0]
+                  .trim(),
+                purpose: mess.body
+                  .split("payment_tag:")[1]
+                  .split("amount")[0]
+                  .trim()
+                  .split("-")[
+                  mess.body
+                    .split("payment_tag:")[1]
+                    .split("amount")[0]
+                    .trim()
+                    .split("-").length - 1
+                ],
+              },
+              true
+            );
+          message.id["remote"] === numbres.bkr_num &&
+            this.send_message_to_lambda_functions(
+              {
+                wo_number: mess.body.split("tech_name")[0].split(":")[1].trim(),
+                tech_name: mess.body
+                  .split("tech_name:")[1]
+                  .split("tech_phone")[0]
+                  .trim(),
+                purpose: mess.body
+                  .split("payment_tag:")[1]
+                  .split("amount")[0]
+                  .trim()
+                  .split("-")[
+                  mess.body
+                    .split("payment_tag:")[1]
+                    .split("amount")[0]
+                    .trim()
+                    .split("-").length - 1
+                ],
+              },
               true,
               true
             );
-            
         }
       } catch (error) {
         console.log(error)

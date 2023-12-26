@@ -143,13 +143,57 @@ async function payment_message_parser(message , isBkr) {
        data["warnings"] +=
          "Total payment for tech exceeds $600, please include W9 . ";
     }
- 
+    const get_Total_Amount_By_WO = async (wo_number) => {
+      console.log(wo_number);
+      const cleaned_wo_number = wo_number.trim();
+      let q_af = `SELECT * FROM payments WHERE TRIM(work_order_number) = '${cleaned_wo_number}';`;
+      let q_bkr = `SELECT * FROM rbk_invoices WHERE TRIM(work_order_number) = '${cleaned_wo_number}';`;
+      try {
+        const response = await fetch(
+          "https://i3gzeqflqihryswsazg6cf7eja0xqysp.lambda-url.us-east-2.on.aws/",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              query: q_af,
+            }),
+          }
+        );
+        const res = await fetch(
+          "https://i3gzeqflqihryswsazg6cf7eja0xqysp.lambda-url.us-east-2.on.aws/",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              query: q_bkr,
+            }),
+          }
+        );
+        
+
+        let data_af = await response.json();
+        let data_bkr = await res.json();
+        console.log(data_af);
+        console.log(data_bkr);
+        let totalAmount = 0;
+        for (i of data_af) {
+          totalAmount = totalAmount + +i[6];
+        }
+        for (i of data_bkr) {
+          totalAmount = totalAmount + +i[12];
+        }
+        return totalAmount;
+      } catch (error) {
+        console.log(error);
+        return 0;
+      }
+    };
+    data['total_amount'] = await get_Total_Amount_By_WO(data['wo_number'])
     
   for (const [key, value] of Object.entries(data)) {
     output += `${key}: ${value}\n`;
   }
   return { output, data };
 }
+
 let test_messages = [
   "PP: Osceola Air LLC/ (407) 439-1995/  Credit Card / https://client.housecallpro.com/pay_invoice/43e46deb2efbdcc64ee0be0a06c02a08b5d7c369ee94ea2a1a70bf61d7cf0e36_e9142c3990e632ca80a97841983c930bcd81116455b128698285224d476ff99a/ 152632-T-J / $309.75 ",
   "PP: Jon Doe/ (803)991-8877/Cashapp/ $johnDoe / 151488-T-A0.5/ $50",

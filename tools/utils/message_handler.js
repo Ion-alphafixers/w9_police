@@ -35,6 +35,7 @@ async function message_handler(this_object, message) {
             "wo_number"
           ].trim()} not found in clickup.`
         );
+        message.reply(output)
       }
       const company_name_from_db = wo_number_data[0].filter((element) => {
         return element === "BKR" || element === "Alpha Fixers";
@@ -57,38 +58,13 @@ async function message_handler(this_object, message) {
         return;
       }
     }
-    let tech_total_paid = await this_object.get_tech_total_paid(
-      data["tech_name"]?.trim()
-    );
-    let additional_tech_total_paid = await this_object.get_tech_total_paid(
-      data["additional_tech_name"]?.trim()
-    );
-    if (
-      (tech_total_paid > 600 || additional_tech_total_paid > 600) &&
-      !data["warnings"].includes("Please include w9")
-    ) {
-      data["warnings"] = "Please include w9";
-    }
+ 
+    
 
     !output.startsWith("Duplicate") &&
       !output.startsWith("Format") &&
-      (output = `${output}tech_total_paid:${
-        tech_total_paid !== null ? tech_total_paid : 0
-      }\n`);
-    if (data["additional_tech_name"] !== null) {
-      let trimmed_data = data["additional_tech_name"]?.trim();
-      if (
-        trimmed_data !== "" &&
-        trimmed_data !== "null" &&
-        trimmed_data !== "None"
-      ) {
-        !output.startsWith("Duplicate") &&
-          !output.startsWith("Format") &&
-          (output = `${output}additional_tech_total_paid:${
-            additional_tech_total_paid !== null ? additional_tech_total_paid : 0
-          }\n`);
-      }
-    }
+      (output = `${output}`);
+    
     if (!output.startsWith("Format")) {
       console.log(this_object);
       let x;
@@ -111,48 +87,21 @@ async function message_handler(this_object, message) {
         output = "Duplicate payment tag detected";
       }
       let totalAmount = 0;
-      console.log(data["additional_tech_name"]);
-      if (data["additional_tech_name"]) {
-        if (message.from === numbres.alpha_fixers_num) {
-          totalAmount = await getTotalAmounts.getTotalAmounts(
-            data["additional_tech_name"],
-            data["wo_number"],
-            false
-          );
-        }
-        if (message.from === numbres.bkr_num) {
-          totalAmount = await getTotalAmounts.getTotalAmounts(
-            data["additional_tech_name"],
-            data["wo_number"],
-            true
-          );
-        }
-      } else {
-        if (message.from === numbres.alpha_fixers_num) {
-          totalAmount = await getTotalAmounts.getTotalAmounts(
-            data["tech_name"],
-            data["wo_number"],
-            false
-          );
-        }
-        if (message.from === numbres.bkr_num) {
-          totalAmount = await getTotalAmounts.getTotalAmounts(
-            data["tech_name"],
-            data["wo_number"],
-            true
-          );
-        }
-      }
-      console.log(data["total_amount"]);
-      if (data["total_amount"] && totalAmount !== data["total_amount"]) {
-        await message.reply(
-          `The calculated total amount for ${
-            data["additional_tech_name"]
-              ? data["additional_tech_name"]
-              : data["tech_name"]
-          }for work order ${data["wo_number"]} is ${totalAmount}$`
-        );
-      }
+      totalAmount =
+        data["additional_tech_name"] === null
+          ? await getTotalAmounts.getTotalAmounts(data["tech_phone"], false)
+          : await getTotalAmounts.getTotalAmounts(
+              data["additional_tech_name"],
+              true
+            );
+      console.log(totalAmount);
+      await message.reply(
+        `The calculated total amount for ${
+          data["additional_tech_name"]
+            ? data["additional_tech_name"]
+            : data["tech_name"]
+        } is ${parseFloat(totalAmount.toFixed(2))}$`
+      );
     }
 
     const reply = await message.reply(output);
