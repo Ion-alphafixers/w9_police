@@ -1,8 +1,8 @@
 const { APPROVER_NUMBERS } = require("../../configs/numbers");
 const { payment_message_parser } = require("../message_tools/main");
 const getexistingPaymentTag = require("../../tools/message_tools/get_payments");
-const getTotalAmounts = require("../../tools/message_tools/getTotalAmounts");
 const numbres = require("../../configs/group_numbers");
+const getTotalAmounts = require("../../tools/message_tools/getTotalAmounts");
 const LambdaHandler = require("./lambda_requests");
 const lambda_handler_instance = new LambdaHandler();
 async function message_handler(this_object, message) {
@@ -95,6 +95,30 @@ async function message_handler(this_object, message) {
               true
             );
       console.log(totalAmount);
+      if (data["total_amount_from_message"] === null) {
+        await message.reply(
+          `WO_recognized , Total amount missing from the message.`
+        );
+      }
+      totalAmount =
+        data["additional_tech_name"] === null
+          ? await getTotalAmounts.getTotalAmounts(data["tech_phone"], false)
+          : await getTotalAmounts.getTotalAmounts(
+              data["additional_tech_name"],
+              true
+            );
+      if (
+        data["total_amount_from_message"] !== null &&
+        data["total_amount_from_message"] !== data["amount"] + totalAmount
+      ) {
+        await message.reply(
+          `Tech total is ${data["amount"] + totalAmount}$ not ${
+            data["total_amount_from_message"]
+          }$`
+        );
+      }
+
+
       await message.reply(
         `The calculated total amount for ${
           data["additional_tech_name"]
@@ -103,7 +127,6 @@ async function message_handler(this_object, message) {
         } is ${parseFloat(totalAmount.toFixed(2))}$`
       );
     }
-
     const reply = await message.reply(output);
     if (output?.startsWith("Format") === false) {
       this_object.incoming_messages_id_object_mapping[message.id["id"]] =

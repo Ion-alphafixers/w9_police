@@ -4,11 +4,11 @@ const {
   capitalizeFirstLetter,
 } = require("./helpers");
 const validate = require("../../tools/message_tools/checkPaymentTag");
-
+const getTotalAmounts = require("../../tools/message_tools/getTotalAmounts");
 const w9Validator = require("../../tools/message_tools/getTotalAmounts");
 const validators = require("./sections_validators");
 const validators_lib = require("./validator_lib_validators");
-
+let total_paid_for_tech =  0
 async function payment_message_parser(message , isBkr) {
   let data = data_initializer();
   const is_rr_message = message.includes("RR") && message.startsWith("RR");
@@ -180,6 +180,7 @@ async function payment_message_parser(message , isBkr) {
         for (i of data_bkr) {
           totalAmount = totalAmount + +i[12];
         }
+        total_paid_for_tech = totalAmount
         return totalAmount;
       } catch (error) {
         console.log(error);
@@ -187,10 +188,9 @@ async function payment_message_parser(message , isBkr) {
       }
     };
     data['total_amount'] = await get_Total_Amount_By_WO(data['wo_number'])
-    
-  for (const [key, value] of Object.entries(data)) {
-    output += `${key}: ${value}\n`;
-  }
+    for (const [key, value] of Object.entries(data)) {
+      output += `${key}: ${value}\n`;
+    }
   return { output, data };
 }
 

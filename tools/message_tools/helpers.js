@@ -37,18 +37,18 @@ function extracted_amounts_resolver(
     extracted_amounts["total_amount"] === null
   ) {
     data["amount"] = extracted_amounts["amount"];
+    data["total_amount_from_message"] = null;
   } else if (
     extracted_amounts["amount"] !== null &&
     extracted_amounts["total_amount"] !== null
   ) {
     data["amount"] = extracted_amounts["amount"];
-    data["total_amount"] = extracted_amounts["total_amount"];
+    data["total_amount_from_message"] = extracted_amounts["total_amount"];
   }
   if (data["amount"] >= 5000) {
     data["warnings"] +=
       "warning: payment amount exceeds $5,000, proceed with caution/";
   }
-
 }
 function capitalizeFirstLetter(inputString) {
   // Check if the inputString is empty or null
