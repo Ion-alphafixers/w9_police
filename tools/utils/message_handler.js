@@ -1,6 +1,7 @@
 const { APPROVER_NUMBERS } = require("../../configs/numbers");
 const { payment_message_parser } = require("../message_tools/main");
 const getexistingPaymentTag = require("../../tools/message_tools/get_payments");
+const getexistingPayments = require("../../tools/message_tools/get_wo_availibility");
 const numbres = require("../../configs/group_numbers");
 const getTotalAmounts = require("../../tools/message_tools/getTotalAmounts");
 const LambdaHandler = require("./lambda_requests");
@@ -95,7 +96,19 @@ async function message_handler(this_object, message) {
               true
             );
       console.log(totalAmount);
-      if (data["total_amount_from_message"] === null) {
+      let isPaymentAvailable = false;
+      if (message.from === numbres.bkr_num) {
+        isPaymentAvailable = await getexistingPayments.getexistingPayments(
+          data["wo_number"],true
+        );
+      }else{
+        isPaymentAvailable = await getexistingPayments.getexistingPayments(
+          data["wo_number"],
+          false
+        );
+      }
+     
+      if (data["total_amount_from_message"] === null && isPaymentAvailable) {
         await message.reply(
           `WO_recognized , Total amount missing from the message.`
         );
