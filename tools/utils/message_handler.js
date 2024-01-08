@@ -120,14 +120,16 @@ async function message_handler(this_object, message) {
               data["additional_tech_name"],
               true
             );
+      let wo_number_total_amount_lookup =
+        await getTotalAmounts.wo_number_total_amount_lookup(data['wo_number'])
       if (
         data["total_amount_from_message"] !== null &&
-        data["total_amount_from_message"] !== data["amount"] + totalAmount
+        data["total_amount_from_message"] !== data["amount"] + wo_number_total_amount_lookup
       ) {
         await message.reply(
-          `Tech total is ${data["amount"] + totalAmount}$ not ${
-            data["total_amount_from_message"]
-          }$`
+          `Tech total including amount to be paid is ${
+            data["amount"] + wo_number_total_amount_lookup
+          }$ not ${data["total_amount_from_message"]}$`
         );
       }
 
@@ -137,7 +139,7 @@ async function message_handler(this_object, message) {
           data["additional_tech_name"]
             ? data["additional_tech_name"]
             : data["tech_name"]
-        } is ${parseFloat(totalAmount.toFixed(2))}$`
+        } including amount to be paid is ${parseFloat(totalAmount.toFixed(2))}$`
       );
     }
     const reply = await message.reply(output);
