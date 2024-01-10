@@ -139,9 +139,9 @@ async function message_handler(this_object, message) {
           data["additional_tech_name"]
             ? data["additional_tech_name"]
             : data["tech_name"]
-        } including amount to be paid is ${parseFloat(
-          totalAmount.toFixed(2) + (data["total_amount_from_message"] !== null ? data["total_amount_from_message"] : 0)
-        )}$`
+        } including amount to be paid is ${
+          totalAmount + (data["total_amount_from_message"] !== null ? data["total_amount_from_message"] : 0)
+        }$`
       );
     }
     const reply = await message.reply(output);
