@@ -35,7 +35,7 @@ const check_if_inputed_fm_is_correct = async (wo_number) => {
     }
     
   }
-  console.log(allTasks);
+  console.log('tasks');
   let wos = allTasks.filter((wo) => wo.name === wo_number);
   if(wos.length === 0){
     return false

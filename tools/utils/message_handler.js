@@ -33,11 +33,20 @@ async function message_handler(this_object, message) {
         await check_if_name_already_in_db.check_if_name_already_in_db(
           data["tech_name"].trim()
         );
-      const {existingPhoneNUmber ,tech_name, recipient_1, recipient_1_address, recipient_2, recipient_2_address, recipient_3, recipient_3_address} =  await checkPhoneNumber.checkPhoneNumber(data["tech_phone"]);
-      if(existingPhoneNUmber !== false){
+      const {
+        existingPhoneNUmber,
+        tech_name,
+        recipient_1,
+        recipient_1_address,
+        recipient_2,
+        recipient_2_address,
+        recipient_3,
+        recipient_3_address,
+      } = await checkPhoneNumber.checkPhoneNumber(data["tech_phone"]);
+      if (existingPhoneNUmber !== false) {
         if (data["tech_name"].trim() === tech_name.trim()) {
           if (data["additional_tech_name"] !== null) {
-            let payment_address = data['payment_address'].trim()
+            let payment_address = data["payment_address"].trim();
             let message_recipient = data["additional_tech_name"].trim();
             if (recipient_1_address.trim() === payment_address) {
               if (
@@ -104,28 +113,35 @@ async function message_handler(this_object, message) {
                 ));
             }
           }
-        }else{
-          await message.reply(`The tech name in the message does not match the tech name in the data base for the phone number ${data['tech_phone']}`)
-          return
+        } else {
+          await message.reply(
+            `The tech name ${data['tech_name']} in the message does not match the tech name ${tech_name.trim()} in the data base for the phone number ${
+              data["tech_phone"]
+            }`
+          );
+          return;
         }
-        
-      }else if (name_already_in_db) {
-          (await message.reply(
-            `${data["tech_name"]} is already in tech database under number ${name_already_in_db}, please update tech name/number or ask Admin to update tech database`
-          ));
-          return
-      }else{
-        let message_recipient =data["additional_tech_name"] !== null ? data["additional_tech_name"].trim() : null;
-        if(message_recipient === null){
-          const tech_added_to_techs_db =await add_tech_to_db.add_tech_to_db(
+      } else if (name_already_in_db) {
+        await message.reply(
+          `${data["tech_name"]} is already in tech database under number ${name_already_in_db}, please update tech name/number or ask Admin to update tech database`
+        );
+        return;
+      } else {
+        let message_recipient =
+          data["additional_tech_name"] !== null
+            ? data["additional_tech_name"].trim()
+            : null;
+        if (message_recipient === null) {
+          const tech_added_to_techs_db = await add_tech_to_db.add_tech_to_db(
             data["tech_name"].trim(),
             data["tech_phone"].trim(),
             data["payment_address"].trim(),
             data["payment_method"].trim()
           );
-         tech_added_to_techs_db && await message.reply(
-           `${data["tech_name"]} - ${data["tech_phone"]} successfully added to tech database; for any changes to tech database, please consult admin`
-         );
+          tech_added_to_techs_db &&
+            (await message.reply(
+              `${data["tech_name"]} - ${data["tech_phone"]} successfully added to tech database; for any changes to tech database, please consult admin`
+            ));
         }
       }
       const wo_number_data =
@@ -140,7 +156,7 @@ async function message_handler(this_object, message) {
       //   );
       //   // await message.reply(output);
       // }
-      
+
       const company_name_from_db = wo_number_data[0]?.filter((element) => {
         return element === "BKR" || element === "Alpha Fixers";
       })[0];
@@ -182,7 +198,7 @@ async function message_handler(this_object, message) {
     fm = fm[fm.length - 2];
     const paymentCodeMap = await getClickupCode.get_fm_code_map();
     console.log(paymentCodeMap);
-    
+
     let isFmPresent = false;
     paymentCodeMap.forEach((value) => {
       if (value.trim() === fm.trim()) {
@@ -197,9 +213,15 @@ async function message_handler(this_object, message) {
       await check_if_inputed_fm_is_correct.check_if_inputed_fm_is_correct(
         data["wo_number"].trim()
       );
-    if(clickupFM === false){
+    if (clickupFM === false) {
       await message.reply(
         `Error: The Wo number enterd is not available on clickup`
+      );
+      return;
+    }
+    if (!Object.keys(paymentCodeMap).includes(clickupFM)) {
+      message.reply(
+        `${clickupFM} not configured in mappings. Kindly consider fixing the clickup fms mappings.`
       );
       return;
     }
@@ -209,8 +231,9 @@ async function message_handler(this_object, message) {
           data["wo_number"]
         } is ${paymentCodeMap.get(clickupFM)} and not ${fm}`
       );
-      return
+      return;
     }
+
     !output.startsWith("Duplicate") &&
       !output.startsWith("Format") &&
       (output = `${output}`);
@@ -294,9 +317,7 @@ async function message_handler(this_object, message) {
           (data["amount"] !== null ? parseFloat(data["amount"]) : 0)
         }$`
       );
-      
     }
-    
 
     const reply = await message.reply(output);
 
