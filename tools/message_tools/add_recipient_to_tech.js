@@ -19,7 +19,7 @@ const addRecipientAndAddressToTechsDB = async (
       db_payment_address = "recipient_3_address";
     }
   const cleanedTechPhone = tech_phone.replace(/\s/g, "").replace(/[-()]/g, "");
-  let q = `UPDATE test_techs SET ${empty_recipient} = '${message_recipient}' , ${db_payment_address} = '${payment_address}'  WHERE REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tech_phone), ' ', ''), '-', ''), '(', ''), ')', '') = '${cleanedTechPhone}';`;
+  let q = `UPDATE techs SET ${empty_recipient} = '${message_recipient}' , ${db_payment_address} = '${payment_address}'  WHERE REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tech_phone), ' ', ''), '-', ''), '(', ''), ')', '') = '${cleanedTechPhone}';`;
     console.log(q)
   try {
     const response = await fetch(

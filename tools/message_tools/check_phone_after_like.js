@@ -1,6 +1,6 @@
 const checkPhoneNumberAfterLike = async (tech_phone) => {
   const cleanedTechPhone = tech_phone?.replace(/\s/g, "").replace(/[-()]/g, "");
-  let q = `SELECT * FROM test_techs WHERE REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tech_phone), ' ', ''), '-', ''), '(', ''), ')', '') = '${
+  let q = `SELECT * FROM techs WHERE REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tech_phone), ' ', ''), '-', ''), '(', ''), ')', '') = '${
     cleanedTechPhone
   }';`;
 

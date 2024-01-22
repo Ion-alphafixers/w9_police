@@ -1,7 +1,7 @@
 const check_if_name_already_in_db = async (
   tech_name
 ) => {
-  let q = `Select * from test_techs where tech_name = '${tech_name}'`;
+  let q = `Select * from techs where tech_name = '${tech_name}'`;
   console.log(q);
   try {
     const response = await fetch(
