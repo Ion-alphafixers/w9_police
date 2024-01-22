@@ -20,8 +20,8 @@ async function payment_message_parser(message , isBkr) {
     console.log();
   }
   if (
-    message.startsWith("PP") === false &&
-    message.startsWith("RR") === false
+    message.startsWith("PP:") === false &&
+    message.startsWith("RR:") === false
   ) {
     return;
   }

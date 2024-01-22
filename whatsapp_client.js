@@ -6,6 +6,7 @@ const { payment_message_parser } = require("./tools/message_tools/main");
 const { APPROVER_NUMBERS } = require("./configs/numbers");
 const { message_handler } = require("./tools/utils/message_handler");
 const numbres = require("./configs/group_numbers")
+const checkMessage = require('./tools/message_tools/check_phone_after_like')
 class WhatsappClient {
   constructor() {
     this.tech_total_amount_paid_lambda_function_url =
@@ -125,7 +126,6 @@ class WhatsappClient {
       } catch (error) {
         console.log(error)
       }
-      
     });
   }
   client_ready_listener() {
@@ -134,8 +134,7 @@ class WhatsappClient {
         console.log("Client is ready!");
       }catch(err){
         console.log(err)
-      }
-      
+      }      
     });
   }
   message_listener() {
@@ -197,6 +196,25 @@ class WhatsappClient {
               false,
               true
             );
+            // let newTech = await checkMessage.checkPhoneNumberAfterLike(mess.body.split('tech_phone:')[1].split("additional")[0].trim())
+            // if(newTech){
+            //   await mess.reply(
+            //     `New tech detected ${
+            //       mess.body.includes("additional_tech_name: null")
+            //         ? mess.body
+            //             .split("tech_name:")[1]
+            //             .split("tech_phone:")[0]
+            //             .trim()
+            //         : mess.body
+            //             .split("additional_tech_name:")[1]
+            //             .split("payment_method:")[0]
+            //             .trim()
+            //     } added to techs DataBase with phone number ${mess.body
+            //       .split("tech_phone:")[1]
+            //       .split("additional")[0]
+            //       .trim()}`
+            //   );
+            // }
         } else if (
           APPROVER_NUMBERS.includes(
             message.id["participant"]?.replace("@c.us", "")
@@ -254,6 +272,7 @@ class WhatsappClient {
       }
       
     });
+    
   }
   delete_listener() {
     this.client.on("message_revoke_everyone", (message) => {

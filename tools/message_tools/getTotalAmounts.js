@@ -83,8 +83,8 @@ const getTotalAmounts = async (query_variable, hasAdditionalTechName) => {
     q_bkr = `SELECT * FROM rbk_invoices WHERE REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tech_phone), ' ', ''), '-', ''), '(', ''), ')', '') = '${cleanedTechPhone}';`;
   } else {
     const cleanedAdditionalTechName = additional_tech_name.trim();
-    q_af = `SELECT * FROM payments WHERE TRIM(tech_name) = '${cleanedAdditionalTechName}';`;
-    q_bkr = `SELECT * FROM rbk_invoices WHERE TRIM(tech_name) = '${cleanedAdditionalTechName}';`;
+    q_af = `SELECT * FROM payments WHERE TRIM(recipient) = '${cleanedAdditionalTechName}';`;
+    q_bkr = `SELECT * FROM rbk_invoices WHERE TRIM(recipient) = '${cleanedAdditionalTechName}';`;
   }
 
   try {
