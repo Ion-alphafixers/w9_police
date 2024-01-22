@@ -164,7 +164,7 @@ async function message_handler(this_object, message) {
         message.from === numbres.bkr_num &&
         company_name_from_db === "Alpha Fixers"
       ) {
-        message.reply(
+        await message.reply(
           `WARNING: Payment correlated to work order number ${data["wo_number"]} should be sent from Alpha Fixers payment group`
         );
         return;
@@ -172,7 +172,7 @@ async function message_handler(this_object, message) {
         message.from === numbres.alpha_fixers_num &&
         company_name_from_db === "BKR"
       ) {
-        message.reply(
+        await message.reply(
           `WARNING: Payment correlated to work order number ${data["wo_number"]} should be sent from BKR payment group`
         );
         return;
@@ -220,7 +220,7 @@ async function message_handler(this_object, message) {
       return;
     }
     if (!Object.keys(paymentCodeMap).includes(clickupFM)) {
-      message.reply(
+      await message.reply(
         `${clickupFM} not configured in mappings. Kindly consider fixing the clickup fms mappings.`
       );
       return;
