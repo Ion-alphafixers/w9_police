@@ -43,11 +43,18 @@ async function message_handler(this_object, message) {
         recipient_3,
         recipient_3_address,
       } = await checkPhoneNumber.checkPhoneNumber(data["tech_phone"]);
-      if (existingPhoneNUmber !== false) {
+      if (existingPhoneNUmber !== false ) {
         if (data["tech_name"].trim() === tech_name.trim()) {
           if (data["additional_tech_name"] !== null) {
-            let payment_address = data["payment_address"].trim();
-            let message_recipient = data["additional_tech_name"].trim();
+            let payment_address = data["payment_address"]?.trim();
+            if(!payment_address){
+              payment_address = ''
+            }
+            let message_recipient = data["additional_tech_name"]?.trim();
+            if (!message_recipient) {
+              message_recipient = "";
+            }
+
             if (recipient_1_address.trim() === payment_address) {
               if (
                 recipient_1.trim().toLowerCase() !==
@@ -215,11 +222,11 @@ async function message_handler(this_object, message) {
       );
     if (clickupFM === false) {
       await message.reply(
-        `Error: The Wo number enterd is not available on clickup`
+        `Error: The Wo number enterd is not available in Active WOs in clickup`
       );
       return;
     }
-    if (!Object.keys(paymentCodeMap).includes(clickupFM)) {
+    if (!Array.from(paymentCodeMap.keys()).includes(clickupFM)) {
       await message.reply(
         `${clickupFM} not configured in mappings. Kindly consider fixing the clickup fms mappings.`
       );
