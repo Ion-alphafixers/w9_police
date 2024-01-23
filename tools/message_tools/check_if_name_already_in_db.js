@@ -13,6 +13,7 @@ const check_if_name_already_in_db = async (
         }),
       }
     );
+    
     let data = await response.json()
     if(data.length !== 0){
         return data[0][2]
