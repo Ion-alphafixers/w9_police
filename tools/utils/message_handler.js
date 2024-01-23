@@ -142,7 +142,7 @@ async function message_handler(this_object, message) {
           const tech_added_to_techs_db = await add_tech_to_db.add_tech_to_db(
             data["tech_name"].trim(),
             data["tech_phone"].trim(),
-            data["payment_address"].trim(),
+            data["payment_address"] !== null ? data["payment_address"].trim() : '',
             data["payment_method"].trim()
           );
           tech_added_to_techs_db &&
